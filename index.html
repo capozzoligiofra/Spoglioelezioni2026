@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="it">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; img-src 'self' data:; style-src 'self'; script-src 'self'; connect-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'"
+    />
+    <!-- Niente indicizzazione sui motori di ricerca: sul sito ci sono nomi di studenti -->
+    <meta name="robots" content="noindex, nofollow" />
+    <meta
+      name="description"
+      content="Spoglio in diretta delle elezioni degli studenti: voti di lista, preferenze, seggi e affluenza, aggiornati sezione per sezione."
+    />
+    <meta property="og:title" content="Spoglio delle elezioni studentesche" />
+    <meta
+      property="og:description"
+      content="Segui in diretta lo spoglio: voti, preferenze e seggi aggiornati sezione per sezione."
+    />
+    <meta name="theme-color" content="#fcfcfb" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#1a1a19" media="(prefers-color-scheme: dark)" />
+    <title>Spoglio delle elezioni</title>
+    <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="css/stile.css" />
+    <script type="module" src="js/pubblico.js"></script>
+  </head>
+  <body>
+    <a class="salta" href="#contenuto">Vai ai risultati</a>
+
+    <header class="testata">
+      <div class="contenitore">
+        <p class="scuola" id="scuola"></p>
+        <h1 id="titolo">Spoglio delle elezioni</h1>
+        <p class="data-elezioni" id="data-elezioni" hidden></p>
+        <div class="barra-stato">
+          <p class="stato-spoglio" id="stato-spoglio" data-stato="caricamento">Caricamento…</p>
+          <div class="aggiornamento" id="aggiornamento"></div>
+        </div>
+        <div class="avvisi" id="avvisi"></div>
+      </div>
+    </header>
+
+    <nav class="schede" id="schede" aria-label="Elezioni" hidden>
+      <div class="contenitore"></div>
+    </nav>
+
+    <main id="contenuto" tabindex="-1">
+      <div class="contenitore" id="pannelli">
+        <div class="caricamento">
+          <p>Caricamento dei risultati…</p>
+          <noscript><p>Per vedere i risultati serve JavaScript attivo nel browser.</p></noscript>
+        </div>
+      </div>
+    </main>
+
+    <footer class="piede">
+      <div class="contenitore">
+        <p>
+          I risultati sono pubblicati dagli scrutatori durante lo spoglio e hanno valore informativo: fanno fede i
+          verbali della Commissione elettorale.
+        </p>
+        <p class="piede-collegamenti" id="piede-collegamenti">
+          <a href="admin.html">Area scrutatori</a>
+        </p>
+      </div>
+    </footer>
+
+    <div class="sr-only" id="annuncio" aria-live="polite" aria-atomic="true"></div>
+  </body>
+</html>

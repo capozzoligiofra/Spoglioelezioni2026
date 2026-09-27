@@ -1,0 +1,22 @@
+# Controlla il codice e il file data/elezioni.json a ogni modifica.
+# Non parte quando cambia solo data/risultati.json (le pubblicazioni durante lo spoglio).
+name: Controlli
+
+on:
+  push:
+    paths-ignore:
+      - 'data/risultati.json'
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm test

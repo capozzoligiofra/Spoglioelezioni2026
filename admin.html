@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="it">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; img-src 'self' data:; style-src 'self'; script-src 'self'; connect-src 'self' https://api.github.com; base-uri 'none'; form-action 'none'; object-src 'none'"
+    />
+    <meta name="robots" content="noindex, nofollow" />
+    <meta name="referrer" content="no-referrer" />
+    <meta name="theme-color" content="#fcfcfb" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#1a1a19" media="(prefers-color-scheme: dark)" />
+    <title>Area scrutatori – Spoglio delle elezioni</title>
+    <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="css/stile.css" />
+    <script type="module" src="js/admin.js"></script>
+  </head>
+  <body>
+    <a class="salta" href="#contenuto">Vai al contenuto</a>
+
+    <header class="testata">
+      <div class="contenitore">
+        <p class="scuola" id="scuola"></p>
+        <h1>Area scrutatori</h1>
+        <p class="data-elezioni">
+          Inserisci i risultati di ogni sezione e pubblicali sul sito dello spoglio.
+          <a href="./" id="collegamento-sito">Vai al sito pubblico</a>
+        </p>
+        <div class="avvisi" id="avvisi"></div>
+      </div>
+    </header>
+
+    <main id="contenuto" tabindex="-1">
+      <div class="contenitore griglia-due" id="area">
+        <div class="caricamento">
+          <p>Caricamento…</p>
+          <noscript><p>Per usare l'area scrutatori serve JavaScript attivo nel browser.</p></noscript>
+        </div>
+      </div>
+    </main>
+
+    <section class="azioni-fisse" id="azioni" aria-label="Pubblicazione dei risultati" hidden>
+      <div class="contenitore"></div>
+    </section>
+
+    <div class="sr-only" id="annuncio" aria-live="polite" aria-atomic="true"></div>
+  </body>
+</html>

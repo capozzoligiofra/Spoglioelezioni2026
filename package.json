@@ -1,0 +1,14 @@
+{
+  "name": "spoglio-elezioni-2026",
+  "version": "1.0.0",
+  "description": "Sito per seguire in diretta lo spoglio delle elezioni studentesche",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test",
+    "start": "npx --yes http-server -c-1 -p 8080 ."
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

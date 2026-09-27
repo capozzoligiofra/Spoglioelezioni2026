@@ -1,0 +1,110 @@
+{
+  "esempio": true,
+  "scuola": "Istituto di Istruzione Superiore «Esempio»",
+  "titolo": "Elezioni degli studenti 2026/27",
+  "dataElezioni": "2026-10-22",
+  "repository": "capozzoligiofra/Spoglioelezioni2026",
+  "aggiornamentoSecondi": 30,
+  "sezioni": [
+    { "id": "1A", "aventiDiritto": 19 },
+    { "id": "1B", "aventiDiritto": 27 },
+    { "id": "1C", "aventiDiritto": 21 },
+    { "id": "1D", "aventiDiritto": 20 },
+    { "id": "1E", "aventiDiritto": 25 },
+    { "id": "2A", "aventiDiritto": 23 },
+    { "id": "2B", "aventiDiritto": 21 },
+    { "id": "2C", "aventiDiritto": 25 },
+    { "id": "2D", "aventiDiritto": 25 },
+    { "id": "2E", "aventiDiritto": 23 },
+    { "id": "3A", "aventiDiritto": 25 },
+    { "id": "3B", "aventiDiritto": 24 },
+    { "id": "3C", "aventiDiritto": 26 },
+    { "id": "3D", "aventiDiritto": 21 },
+    { "id": "3E", "aventiDiritto": 22 },
+    { "id": "4A", "aventiDiritto": 25 },
+    { "id": "4B", "aventiDiritto": 25 },
+    { "id": "4C", "aventiDiritto": 19 },
+    { "id": "4D", "aventiDiritto": 25 },
+    { "id": "4E", "aventiDiritto": 23 },
+    { "id": "5A", "aventiDiritto": 27 },
+    { "id": "5B", "aventiDiritto": 26 },
+    { "id": "5C", "aventiDiritto": 20 },
+    { "id": "5D", "aventiDiritto": 23 },
+    { "id": "5E", "aventiDiritto": 27 }
+  ],
+  "elezioni": [
+    {
+      "id": "consiglio-istituto",
+      "nome": "Consiglio d'Istituto",
+      "descrizione": "Rappresentanti degli studenti nel Consiglio d'Istituto",
+      "seggi": 4,
+      "maxPreferenze": 2,
+      "liste": [
+        {
+          "numero": "I",
+          "nome": "Studenti al Centro",
+          "candidati": [
+            { "nome": "Giulia Bianchi", "classe": "5A" },
+            { "nome": "Marco Esposito", "classe": "4C" },
+            { "nome": "Sofia Romano", "classe": "3B" },
+            { "nome": "Luca Colombo", "classe": "5D" },
+            { "nome": "Aurora Ricci", "classe": "2A" },
+            { "nome": "Matteo Marino", "classe": "4E" },
+            { "nome": "Chiara Greco", "classe": "3D" },
+            { "nome": "Alessandro Bruno", "classe": "1B" }
+          ]
+        },
+        {
+          "numero": "II",
+          "nome": "Scuola Aperta",
+          "candidati": [
+            { "nome": "Martina Gallo", "classe": "5B" },
+            { "nome": "Lorenzo Conti", "classe": "4A" },
+            { "nome": "Francesca De Luca", "classe": "3C" },
+            { "nome": "Davide Mancini", "classe": "5E" },
+            { "nome": "Elena Costa", "classe": "2D" },
+            { "nome": "Tommaso Giordano", "classe": "4B" }
+          ]
+        },
+        {
+          "numero": "III",
+          "nome": "Voce agli Studenti",
+          "candidati": [
+            { "nome": "Beatrice Rizzo", "classe": "5C" },
+            { "nome": "Riccardo Lombardi", "classe": "4D" },
+            { "nome": "Alice Moretti", "classe": "3A" },
+            { "nome": "Gabriele Barbieri", "classe": "2C" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "consulta",
+      "nome": "Consulta provinciale",
+      "descrizione": "Rappresentanti nella Consulta provinciale degli studenti",
+      "seggi": 2,
+      "maxPreferenze": 1,
+      "liste": [
+        {
+          "numero": "I",
+          "nome": "Consulta Attiva",
+          "candidati": [
+            { "nome": "Emma Fontana", "classe": "4A" },
+            { "nome": "Nicolò Santoro", "classe": "5B" },
+            { "nome": "Giorgia Mariani", "classe": "3E" },
+            { "nome": "Pietro Rinaldi", "classe": "4C" }
+          ]
+        },
+        {
+          "numero": "II",
+          "nome": "Insieme in Consulta",
+          "candidati": [
+            { "nome": "Anna Ferrara", "classe": "5D" },
+            { "nome": "Samuele Caruso", "classe": "4E" },
+            { "nome": "Sara Galli", "classe": "3B" }
+          ]
+        }
+      ]
+    }
+  ]
+}
