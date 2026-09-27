@@ -248,7 +248,7 @@ export function dhondt(liste, seggi) {
   // Parità all'ultimo seggio: stesso quoziente e stessi voti di un
   // quoziente rimasto fuori, di una lista che avrebbe ancora candidati.
   let sorteggio = null;
-  const ultimo = vincitori.at(-1);
+  const ultimo = vincitori[vincitori.length - 1];
   if (ultimo && vincitori.length === seggi) {
     const pari = (q) => q.voti === ultimo.voti && q.divisore === ultimo.divisore;
     const esclusi = quozienti.filter((q) => q.seggio === null && pari(q) && perLista.get(q.id) < capienza.get(q.id));

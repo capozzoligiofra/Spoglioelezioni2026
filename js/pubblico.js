@@ -329,7 +329,7 @@ function tastiSchede(evento, id) {
     ArrowRight: ids[(i + 1) % ids.length],
     ArrowLeft: ids[(i - 1 + ids.length) % ids.length],
     Home: ids[0],
-    End: ids.at(-1),
+    End: ids[ids.length - 1],
   }[evento.key];
   if (!destinazione) return;
   evento.preventDefault();
@@ -573,7 +573,7 @@ function votiDiLista(r) {
 
 function elencoListe(liste) {
   const nomi = liste.map((l) => `lista ${l.numero}`);
-  return nomi.length > 1 ? `${nomi.slice(0, -1).join(', ')} e ${nomi.at(-1)}` : nomi[0];
+  return nomi.length > 1 ? `${nomi.slice(0, -1).join(', ')} e ${nomi[nomi.length - 1]}` : nomi[0];
 }
 
 function seggi(r) {
