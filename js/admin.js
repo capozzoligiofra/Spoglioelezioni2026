@@ -78,6 +78,9 @@ const app = {
 const chiaveBozze = () => (app.demo ? 'spoglio:bozze-demo' : 'spoglio:bozze');
 const uguali = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 const sezioneDaId = (id) => app.config.sezioni.find((s) => s.id === id);
+const seggioUnico = () => app.config.sezioni.length === 1;
+/** "Sezione 1A", oppure solo il nome se c'è un seggio unico. */
+const nomeSezione = (sezione) => (seggioUnico() ? sezione.nome : `Sezione ${sezione.nome}`);
 const datiSezione = (id) => app.bozze.sezioni[id] ?? app.pubblicati.sezioni[id];
 
 avvia();
@@ -116,7 +119,8 @@ async function avvia() {
   disegnaTutto();
 
   const daIndirizzo = decodeURIComponent(window.location.hash.replace(/^#sezione-/, ''));
-  if (sezioneDaId(daIndirizzo)) apriSezione(daIndirizzo, { focus: false });
+  if (seggioUnico()) apriSezione(config.sezioni[0].id, { focus: false });
+  else if (sezioneDaId(daIndirizzo)) apriSezione(daIndirizzo, { focus: false });
 }
 
 /** Sul sito GitHub Pages (utente.github.io/repository) il repository si ricava dall'indirizzo. */
@@ -306,9 +310,10 @@ async function scriviSuGitHub(trasforma, messaggioCommit, { ignoraContenuto = fa
 }
 
 function messaggioCommit(bozze) {
-  const parti = Object.entries(bozze.sezioni).map(
-    ([id, dati]) => `sezione ${sezioneDaId(id)?.nome ?? id} ${STATO_BREVE[statoSezione(dati)]}`,
-  );
+  const parti = Object.entries(bozze.sezioni).map(([id, dati]) => {
+    const nome = sezioneDaId(id)?.nome ?? id;
+    return `${seggioUnico() ? nome : `sezione ${nome}`} ${STATO_BREVE[statoSezione(dati)]}`;
+  });
   if (bozze.definitivi !== undefined)
     parti.push(bozze.definitivi ? 'risultati definitivi' : 'risultati di nuovo provvisori');
   if (bozze.avviso !== undefined) parti.push(bozze.avviso ? 'comunicazione aggiornata' : 'comunicazione tolta');
@@ -327,7 +332,7 @@ async function pubblica() {
   const errori = Object.entries(app.bozze.sezioni).flatMap(([id, dati]) =>
     controllaSezione(app.config, sezioneDaId(id), dati)
       .filter((p) => p.livello === 'errore')
-      .map((p) => `• Sezione ${sezioneDaId(id).nome}: ${p.messaggio}`),
+      .map((p) => `• ${nomeSezione(sezioneDaId(id))}: ${p.messaggio}`),
   );
   if (
     errori.length > 0 &&
@@ -439,16 +444,19 @@ function costruisciPagina() {
   app.el.riepilogoSezioni = h('p', { class: 'sottotitolo' });
   app.el.modulo = h('section', { class: 'blocco', 'aria-labelledby': 'titolo-modulo', hidden: true });
 
-  pagina.area.replaceChildren(
+  riempi(
+    pagina.area,
     app.el.connessione,
-    h(
-      'section',
-      { class: 'blocco', 'aria-labelledby': 'titolo-sezioni' },
-      h('h2', { id: 'titolo-sezioni' }, 'Sezioni'),
-      app.el.riepilogoSezioni,
-      h('p', { class: 'nota' }, 'Scegli una sezione per inserire o correggere i suoi risultati.'),
-      app.el.grigliaSezioni,
-    ),
+    seggioUnico()
+      ? null
+      : h(
+          'section',
+          { class: 'blocco', 'aria-labelledby': 'titolo-sezioni' },
+          h('h2', { id: 'titolo-sezioni' }, 'Sezioni'),
+          app.el.riepilogoSezioni,
+          h('p', { class: 'nota' }, 'Scegli una sezione per inserire o correggere i suoi risultati.'),
+          app.el.grigliaSezioni,
+        ),
     app.el.modulo,
     bloccoGenerale(),
   );
@@ -714,7 +722,7 @@ function apriSezione(id, { focus = true } = {}) {
     h(
       'div',
       {},
-      h('h2', { id: 'titolo-modulo', tabindex: '-1' }, `Sezione ${sezione.nome}`),
+      h('h2', { id: 'titolo-modulo', tabindex: '-1' }, nomeSezione(sezione)),
       h(
         'p',
         { class: 'sottotitolo' },
@@ -742,7 +750,9 @@ function apriSezione(id, { focus = true } = {}) {
       h(
         'p',
         { class: 'nota' },
-        'Con «Scrutinio in corso» i voti inseriti compaiono già sul sito come dati parziali. Quando hai finito di contare scegli «Scrutinata».',
+        seggioUnico()
+          ? 'Con «Scrutinio in corso» i numeri compaiono già sul sito come dati parziali: durante lo spoglio aggiorna i totali ogni tanto (per esempio ogni 30-50 schede) e premi «Pubblica». Quando hai finito di contare scegli «Scrutinata».'
+          : 'Con «Scrutinio in corso» i voti inseriti compaiono già sul sito come dati parziali. Quando hai finito di contare scegli «Scrutinata».',
       ),
     ),
     app.config.elezioni.map((elezione) => moduloElezione(elezione, dati?.elezioni?.[elezione.id])),
@@ -910,7 +920,7 @@ function invioPassaAvanti(evento) {
 
 function annullaSezione() {
   const sezione = sezioneDaId(app.selezionata);
-  if (!window.confirm(`Annullare le modifiche non pubblicate della sezione ${sezione.nome}?`)) return;
+  if (!window.confirm(`Annullare le modifiche non pubblicate (${nomeSezione(sezione)})?`)) return;
   delete app.bozze.sezioni[app.selezionata];
   salvaBozze();
   apriSezione(app.selezionata);

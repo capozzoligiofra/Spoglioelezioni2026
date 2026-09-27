@@ -68,7 +68,7 @@ async function avvia() {
   app.config = config;
 
   try {
-    app.sorgente = demo ? await sorgenteDemo(file.risultati, config) : sorgenteReale(file.risultati);
+    app.sorgente = demo ? await sorgenteDemo(file) : sorgenteReale(file.risultati);
   } catch (errore) {
     erroreGrave('Non riesco a caricare i dati della demo.', [errore.message]);
     return;
@@ -137,13 +137,18 @@ function pianifica() {
 function annunciaNovita() {
   const risultati = normalizzaRisultati(app.risultati);
   if (app.sorgente.demo && !risultati.definitivi) return;
-  const c = contaSezioni(app.config, risultati);
-  annuncia(
-    pagina.annuncio,
-    risultati.definitivi
-      ? 'Sono stati pubblicati i risultati definitivi.'
-      : `Risultati aggiornati: ${c.scrutinata} sezioni scrutinate su ${c.totale}.`,
-  );
+  let testo = 'Sono stati pubblicati i risultati definitivi.';
+  if (!risultati.definitivi && app.config.sezioni.length === 1) {
+    const elezione = app.config.elezioni.find((e) => e.id === app.selezionata);
+    const r = calcolaElezione(app.config, elezione, risultati);
+    testo = `Risultati aggiornati, ${elezione.nome}: ${formato.conteggio(r.schede, 'scheda scrutinata', 'schede scrutinate')}${
+      r.votantiTotali ? ` su ${formato.numero(r.votantiTotali)}` : ''
+    }.`;
+  } else if (!risultati.definitivi) {
+    const c = contaSezioni(app.config, risultati);
+    testo = `Risultati aggiornati: ${c.scrutinata} sezioni scrutinate su ${c.totale}.`;
+  }
+  annuncia(pagina.annuncio, testo);
 }
 
 // ---------------------------------------------------------------- Testata
@@ -377,12 +382,22 @@ function disegna() {
   }
   if (idFocus) trova(idFocus)?.focus({ preventScroll: true });
 
+  document.title = `${avanzamentoBreve(risultati)}Spoglio – ${app.config.titolo ?? 'Elezioni'}`;
+}
+
+/** "(12/25) " oppure, con un seggio unico, "(48%) ": l'avanzamento nel titolo della scheda del browser. */
+function avanzamentoBreve(risultati) {
   const c = contaSezioni(app.config, risultati);
-  const base = `Spoglio – ${app.config.titolo ?? 'Elezioni'}`;
-  document.title =
-    !risultati.definitivi && c.scrutinata > 0 && c.scrutinata < c.totale
-      ? `(${c.scrutinata}/${c.totale}) ${base}`
-      : base;
+  if (risultati.definitivi || c.scrutinata === c.totale) return '';
+  if (app.config.sezioni.length > 1) return c.scrutinata > 0 ? `(${c.scrutinata}/${c.totale}) ` : '';
+  let schede = 0;
+  let votanti = 0;
+  for (const elezione of app.config.elezioni) {
+    const r = calcolaElezione(app.config, elezione, risultati);
+    schede += r.schede;
+    votanti += r.votantiTotali;
+  }
+  return schede > 0 && votanti > 0 ? `(${formato.percentuale(Math.min(1, schede / votanti))}) ` : '';
 }
 
 function pannello(r) {
@@ -404,10 +419,10 @@ function pannello(r) {
       h('p', { class: 'meta' }, descrizioneElezione(elezione)),
     ),
     numeriPrincipali(r),
-    statoSezioni(r),
+    r.seggioUnico ? null : statoSezioni(r),
     r.iniziato
-      ? [votiDiLista(r), seggi(r), preferenze(r), spiegazioneSeggi(r), risultatiPerSezione(r)]
-      : [attesa(), listeECandidati(elezione)],
+      ? [votiDiLista(r), seggi(r), preferenze(r), spiegazioneSeggi(r), r.seggioUnico ? null : risultatiPerSezione(r)]
+      : [attesa(r), listeECandidati(elezione)],
   );
 }
 
@@ -423,34 +438,56 @@ function descrizioneElezione(elezione) {
     .join(' · ');
 }
 
-function numeriPrincipali(r) {
+function misuratore(quota, completo) {
+  return h(
+    'div',
+    { class: `misuratore${completo ? ' completo' : ''}`, 'aria-hidden': 'true' },
+    h('span', { style: { '--w': `${Math.max(0, Math.min(1, quota)) * 100}%` } }),
+  );
+}
+
+/** Avanzamento dello spoglio: in sezioni scrutinate, o in schede con un seggio unico. */
+function tesseraAvanzamento(r) {
+  if (r.seggioUnico) {
+    let dettaglio = 'Lo spoglio non è ancora iniziato';
+    if (r.completo) dettaglio = 'Scrutinio concluso';
+    else if (r.quotaSchede !== null) dettaglio = `${formato.percentuale(r.quotaSchede)} delle schede`;
+    else if (r.iniziato) dettaglio = 'Spoglio in corso';
+    return tessera(
+      'Schede scrutinate',
+      [formato.numero(r.schede), r.votantiTotali ? h('small', {}, ` su ${formato.numero(r.votantiTotali)}`) : null],
+      r.quotaSchede === null ? null : misuratore(r.quotaSchede, r.completo),
+      dettaglio,
+    );
+  }
   const { totale, scrutinata } = r.sezioni;
   const inCorso = r.sezioni['in-corso'];
-  const tutte = scrutinata === totale;
-  let dettaglioSezioni = `${formato.numero(totale - scrutinata)} ancora da completare`;
-  if (tutte) dettaglioSezioni = 'Tutte le sezioni sono state scrutinate';
-  else if (inCorso > 0) dettaglioSezioni = `${formato.conteggio(inCorso, 'sezione', 'sezioni')} in corso di scrutinio`;
+  let dettaglio = `${formato.numero(totale - scrutinata)} ancora da completare`;
+  if (r.completo) dettaglio = 'Tutte le sezioni sono state scrutinate';
+  else if (inCorso > 0) dettaglio = `${formato.conteggio(inCorso, 'sezione', 'sezioni')} in corso di scrutinio`;
+  return tessera(
+    'Sezioni scrutinate',
+    [formato.numero(scrutinata), h('small', {}, ` su ${formato.numero(totale)}`)],
+    misuratore(totale ? scrutinata / totale : 0, r.completo),
+    dettaglio,
+  );
+}
 
+function numeriPrincipali(r) {
+  const parziale = !r.completo && !r.seggioUnico;
   return h(
     'div',
     { class: 'kpi' },
-    tessera(
-      'Sezioni scrutinate',
-      [formato.numero(scrutinata), h('small', {}, ` su ${formato.numero(totale)}`)],
-      h(
-        'div',
-        { class: `misuratore${tutte ? ' completo' : ''}`, 'aria-hidden': 'true' },
-        h('span', { style: { '--w': `${totale ? (scrutinata / totale) * 100 : 0}%` } }),
-      ),
-      dettaglioSezioni,
-    ),
+    tesseraAvanzamento(r),
     tessera(
       'Affluenza',
       formato.percentuale(r.affluenza),
       null,
       r.affluenza === null
-        ? 'Disponibile dopo le prime sezioni'
-        : `${formato.numero(r.votanti)} votanti su ${formato.numero(r.aventiDirittoConDati)} aventi diritto${tutte ? '' : ' nelle sezioni contate'}`,
+        ? `Disponibile ${r.seggioUnico ? "all'inizio dello spoglio" : 'dopo le prime sezioni'}`
+        : `${formato.numero(r.votanti)} votanti su ${formato.numero(r.aventiDirittoConDati)} aventi diritto${
+            parziale ? ' nelle sezioni contate' : ''
+          }`,
     ),
     tessera(
       'Voti validi',
@@ -524,6 +561,13 @@ function barra(quota, classe = '') {
 }
 
 function descrizioneAvanzamento(r) {
+  if (r.seggioUnico) {
+    if (r.completo)
+      return `Risultato finale: ${formato.conteggio(r.schede, 'scheda scrutinata', 'schede scrutinate')}.`;
+    return `Dati parziali: ${formato.conteggio(r.schede, 'scheda scrutinata', 'schede scrutinate')}${
+      r.votantiTotali ? ` su ${formato.numero(r.votantiTotali)}` : ''
+    }.`;
+  }
   const { totale, scrutinata } = r.sezioni;
   const inCorso = r.sezioni['in-corso'];
   if (scrutinata === totale) return `Risultati di tutte le ${formato.numero(totale)} sezioni.`;
@@ -592,7 +636,11 @@ function seggi(r) {
     'section',
     { class: 'blocco', 'aria-labelledby': id },
     h('h3', { id }, titolo),
-    h('p', { class: 'sottotitolo' }, nota),
+    h(
+      'p',
+      { class: 'sottotitolo' },
+      assegnati.length ? nota : 'I seggi compariranno appena saranno contati i primi voti di lista.',
+    ),
     h(
       'ol',
       { class: 'seggi' },
@@ -942,7 +990,7 @@ function risultatiPerSezione(r) {
   );
 }
 
-function attesa() {
+function attesa(r) {
   return h(
     'div',
     { class: 'blocco' },
@@ -954,7 +1002,9 @@ function attesa() {
       h(
         'p',
         {},
-        'I risultati compariranno qui sezione per sezione, appena gli scrutatori li pubblicano. Non serve ricaricare: la pagina si aggiorna da sola.',
+        `I risultati compariranno qui ${
+          r.seggioUnico ? 'man mano che le schede vengono scrutinate' : 'sezione per sezione'
+        }, appena gli scrutatori li pubblicano. Non serve ricaricare: la pagina si aggiorna da sola.`,
       ),
     ),
   );

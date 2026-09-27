@@ -313,6 +313,53 @@ test('applicaBozze: sostituisce solo le sezioni modificate e le ordina', () => {
   assert.equal(nuovi.definitivi, false);
 });
 
+test("seggio unico: l'avanzamento si misura in schede scrutinate su votanti", () => {
+  const { config } = preparaConfigurazione({
+    sezioni: [{ id: 'seggio', nome: 'Seggio unico', aventiDiritto: 600 }],
+    elezioni: [
+      {
+        id: 'ci',
+        nome: 'Consiglio',
+        seggi: 4,
+        maxPreferenze: 2,
+        liste: [
+          { numero: 'I', nome: 'Alfa', candidati: [{ nome: 'Anna' }] },
+          { numero: 'II', nome: 'Beta', candidati: [{ nome: 'Bruno' }] },
+        ],
+      },
+    ],
+  });
+  const elezione = config.elezioni[0];
+
+  const prima = calcolaElezione(config, elezione, {});
+  assert.equal(prima.seggioUnico, true);
+  assert.equal(prima.quotaSchede, null);
+
+  const inCorso = calcolaElezione(config, elezione, {
+    sezioni: {
+      seggio: {
+        stato: 'in-corso',
+        elezioni: { ci: { votanti: 480, bianche: 2, nulle: 1, liste: { I: { voti: 70 }, II: { voti: 47 } } } },
+      },
+    },
+  });
+  assert.equal(inCorso.schede, 120);
+  assert.equal(inCorso.votantiTotali, 480);
+  assert.equal(inCorso.quotaSchede, 0.25);
+  assert.equal(inCorso.affluenza, 0.8);
+  assert.equal(inCorso.completo, false);
+});
+
+test('aggiornamento automatico: 10 secondi se non indicato, mai meno di 5', () => {
+  const base = {
+    sezioni: [{ id: 'seggio' }],
+    elezioni: [{ id: 'ci', nome: 'C', seggi: 1, liste: [{ numero: 'I', nome: 'A', candidati: [{ nome: 'X' }] }] }],
+  };
+  assert.equal(preparaConfigurazione(base).config.aggiornamentoSecondi, 10);
+  assert.equal(preparaConfigurazione({ ...base, aggiornamentoSecondi: 2 }).config.aggiornamentoSecondi, 5);
+  assert.equal(preparaConfigurazione({ ...base, aggiornamentoSecondi: 20 }).config.aggiornamentoSecondi, 20);
+});
+
 test('formattaJSON: oggetti semplici su una riga e risultato rileggibile', () => {
   const dati = { a: 1, b: [{ id: '1A', n: 2 }], c: { d: { e: 'x' } }, f: [], g: {} };
   const testo = formattaJSON(dati);
@@ -346,5 +393,20 @@ test('data/demo: dati di esempio coerenti, spoglio completo, tutti i seggi asseg
     assert.equal(r.completo, true);
     assert.equal(r.seggi.assegnati.length, elezione.seggi);
     assert.equal(r.seggi.sorteggio, null);
+  }
+
+  // Le tappe dello spoglio simulato: numeri coerenti e schede che crescono sempre.
+  const { passi } = leggi('data/demo/spoglio.json');
+  assert.ok(passi.length > 5);
+  const precedenti = {};
+  for (const [i, passo] of passi.entries()) {
+    for (const sezione of config.sezioni) {
+      assert.deepEqual(controllaSezione(config, sezione, passo.sezioni[sezione.id]), [], `Tappa ${i}`);
+    }
+    for (const elezione of config.elezioni) {
+      const { schede } = calcolaElezione(config, elezione, passo);
+      assert.ok(schede >= (precedenti[elezione.id] ?? 0), `Tappa ${i}: le schede scrutinate non possono diminuire`);
+      precedenti[elezione.id] = schede;
+    }
   }
 });

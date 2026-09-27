@@ -150,7 +150,8 @@ export function preparaConfigurazione(grezza) {
 
   const config = {
     ...grezza,
-    aggiornamentoSecondi: intero(grezza.aggiornamentoSecondi) || 30,
+    // Ogni quanti secondi la pagina pubblica ricontrolla i risultati (almeno 5).
+    aggiornamentoSecondi: Math.max(5, intero(grezza.aggiornamentoSecondi) || 10),
     sezioni: grezza.sezioni.map((sezione) => ({
       id: String(sezione.id),
       nome: haTesto(sezione.nome) ? String(sezione.nome) : String(sezione.id),
@@ -278,7 +279,7 @@ export function calcolaElezione(config, elezione, risultatiGrezzi) {
     paritaDecisaDallOrdine: false,
   }));
 
-  const totali = { votanti: 0, bianche: 0, nulle: 0, validi: 0, aventiDirittoConDati: 0 };
+  const totali = { votanti: 0, votantiTotali: 0, bianche: 0, nulle: 0, validi: 0, aventiDirittoConDati: 0 };
   const perSezione = [];
   let conDati = 0;
 
@@ -317,6 +318,7 @@ export function calcolaElezione(config, elezione, risultatiGrezzi) {
     totali.bianche += riga.bianche;
     totali.nulle += riga.nulle;
     totali.validi += riga.validi;
+    totali.votantiTotali += riga.votanti;
     if (riga.votanti > 0 && sezione.aventiDiritto !== null) {
       totali.votanti += riga.votanti;
       totali.aventiDirittoConDati += sezione.aventiDiritto;
@@ -342,8 +344,12 @@ export function calcolaElezione(config, elezione, risultatiGrezzi) {
     });
     const ultimoEletto = lista.candidati[lista.seggi - 1];
     const primoEscluso = lista.candidati[lista.seggi];
+    // (Una parità a zero preferenze, a inizio spoglio, non merita una nota.)
     lista.paritaDecisaDallOrdine = Boolean(
-      ultimoEletto && primoEscluso && ultimoEletto.preferenze === primoEscluso.preferenze,
+      ultimoEletto &&
+      primoEscluso &&
+      ultimoEletto.preferenze > 0 &&
+      ultimoEletto.preferenze === primoEscluso.preferenze,
     );
   }
 
@@ -366,9 +372,12 @@ export function calcolaElezione(config, elezione, risultatiGrezzi) {
 
   const conteggio = contaSezioni(config, risultati);
   const aventiDirittoNoti = config.sezioni.every((s) => s.aventiDiritto !== null);
+  const schede = totali.validi + totali.bianche + totali.nulle;
 
   return {
     elezione,
+    // Con un solo seggio l'avanzamento si misura in schede scrutinate, non in sezioni.
+    seggioUnico: config.sezioni.length === 1,
     sezioni: conteggio,
     iniziato: conDati > 0,
     completo: conteggio.scrutinata === conteggio.totale,
@@ -380,7 +389,9 @@ export function calcolaElezione(config, elezione, risultatiGrezzi) {
     bianche: totali.bianche,
     nulle: totali.nulle,
     validi: totali.validi,
-    schede: totali.validi + totali.bianche + totali.nulle,
+    schede,
+    votantiTotali: totali.votantiTotali,
+    quotaSchede: totali.votantiTotali > 0 ? Math.min(1, schede / totali.votantiTotali) : null,
     liste,
     seggi: {
       assegnati: seggiAssegnati,

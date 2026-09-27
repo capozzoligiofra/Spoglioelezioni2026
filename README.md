@@ -1,19 +1,20 @@
 # Spoglio elezioni 2026
 
 Sito per seguire **in diretta** lo spoglio delle elezioni studentesche della scuola: voti di lista,
-affluenza, preferenze e seggi, aggiornati sezione per sezione mentre gli scrutatori contano le schede.
+affluenza, preferenze e seggi, aggiornati man mano che gli scrutatori contano le schede.
 
 - **Pagina pubblica** (`index.html`) – chiunque la apre dal telefono vede i risultati, che si aggiornano da
-  soli ogni 30 secondi. Mostra anche come vengono assegnati i seggi (metodo D'Hondt) e i risultati di ogni sezione.
-- **Area scrutatori** (`admin.html`) – chi fa lo spoglio inserisce i numeri di ogni sezione, il sito controlla che
-  tornino e con un clic li pubblica.
+  soli ogni 10 secondi: schede scrutinate, voti e percentuali delle liste, seggi, preferenze. Mostra anche come
+  vengono assegnati i seggi (metodo D'Hondt).
+- **Area scrutatori** (`admin.html`) – chi fa lo spoglio inserisce i numeri, il sito controlla che tornino e con
+  un clic li pubblica.
 - **Demo** – aggiungendo `?demo` all'indirizzo, la pagina pubblica simula uno spoglio con dati inventati
   ([prova](https://capozzoligiofra.github.io/Spoglioelezioni2026/?demo)) e l'area scrutatori permette di provare
   l'inserimento senza pubblicare nulla ([prova](https://capozzoligiofra.github.io/Spoglioelezioni2026/admin.html?demo)).
 
-È gratuito, non ha bisogno di un server né di un database, funziona su telefoni vecchi e con connessioni lente,
-ha il tema scuro ed è pensato per essere accessibile (lettori di schermo, tastiera, colori leggibili anche da chi
-ha un daltonismo).
+È gratuito, non ha bisogno di un server né di un database, funziona anche con connessioni lente, ha il tema
+scuro ed è pensato per essere accessibile (lettori di schermo, tastiera, colori leggibili anche da chi ha un
+daltonismo).
 
 ## Come funziona
 
@@ -21,8 +22,8 @@ ha un daltonismo).
  Scrutatori ── area scrutatori ──▶ data/risultati.json nel repository GitHub
                                      (ogni pubblicazione è un commit)
                                                  │
-                                                 ▼  GitHub Pages
-                                     Pagina pubblica: rilegge i dati ogni 30 s
+                                                 ▼  GitHub Pages (circa 1 minuto)
+                                     Pagina pubblica: rilegge i dati ogni 10 s
 ```
 
 Ogni pubblicazione diventa un commit del repository, quindi resta uno **storico pubblico** di tutte le modifiche
@@ -46,8 +47,9 @@ circa 10 aggiornamenti all'ora: troppo pochi durante lo spoglio.
 ### 2. Inserisci i dati delle elezioni
 
 Tutto si configura nel file [`data/elezioni.json`](data/elezioni.json) (su GitHub: apri il file e premi la
-matita per modificarlo). Quello che trovi è un **esempio inventato**: sostituisci scuola, sezioni, liste e
-candidati con quelli veri e **togli la riga `"esempio": true`**.
+matita per modificarlo). Quello che trovi è un **esempio inventato** con un seggio unico e due liste per
+elezione: sostituisci scuola, aventi diritto, liste e candidati con quelli veri e **togli la riga
+`"esempio": true`**.
 
 ```json
 {
@@ -55,11 +57,8 @@ candidati con quelli veri e **togli la riga `"esempio": true`**.
   "titolo": "Elezioni degli studenti 2026/27",
   "dataElezioni": "2026-10-22",
   "repository": "capozzoligiofra/Spoglioelezioni2026",
-  "aggiornamentoSecondi": 30,
-  "sezioni": [
-    { "id": "1A", "aventiDiritto": 24 },
-    { "id": "1B", "aventiDiritto": 22 }
-  ],
+  "aggiornamentoSecondi": 10,
+  "sezioni": [{ "id": "seggio", "nome": "Seggio unico", "aventiDiritto": 600 }],
   "elezioni": [
     {
       "id": "consiglio-istituto",
@@ -69,11 +68,16 @@ candidati con quelli veri e **togli la riga `"esempio": true`**.
       "liste": [
         {
           "numero": "I",
-          "nome": "Motto della lista",
+          "nome": "Motto della prima lista",
           "candidati": [
             { "nome": "Nome Cognome", "classe": "5A" },
             { "nome": "Altro Nome", "classe": "4C" }
           ]
+        },
+        {
+          "numero": "II",
+          "nome": "Motto della seconda lista",
+          "candidati": [{ "nome": "Nome Cognome", "classe": "3B" }]
         }
       ]
     }
@@ -81,15 +85,19 @@ candidati con quelli veri e **togli la riga `"esempio": true`**.
 }
 ```
 
-| Campo                      | Cosa scrivere                                                                                            |
-| -------------------------- | -------------------------------------------------------------------------------------------------------- |
-| `sezioni`                  | Una voce per ogni seggio (di solito una per classe). `aventiDiritto` è il numero di iscritti che votano. |
-| `elezioni[].id`            | Un nome corto con lettere minuscole e trattini, es. `consiglio-istituto` o `consulta`.                   |
-| `elezioni[].seggi`         | Quanti rappresentanti si eleggono.                                                                       |
-| `elezioni[].maxPreferenze` | Quante preferenze si possono dare su una scheda (0 se non si danno preferenze).                          |
-| `liste[].numero`           | Il numero romano della lista, nell'ordine di presentazione (`"I"`, `"II"`, …).                           |
-| `liste[].candidati`        | I candidati **nell'ordine in cui compaiono sulla scheda** (conta in caso di parità di preferenze).       |
-| `aggiornamentoSecondi`     | Ogni quanti secondi la pagina pubblica ricontrolla i dati.                                               |
+| Campo                      | Cosa scrivere                                                                                               |
+| -------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| `sezioni`                  | Il seggio dove si vota. `aventiDiritto` è il numero di studenti che possono votare (serve per l'affluenza). |
+| `elezioni[].id`            | Un nome corto con lettere minuscole e trattini, es. `consiglio-istituto` o `consulta`.                      |
+| `elezioni[].seggi`         | Quanti rappresentanti si eleggono.                                                                          |
+| `elezioni[].maxPreferenze` | Quante preferenze si possono dare su una scheda (0 se non si danno preferenze).                             |
+| `liste[].numero`           | Il numero romano della lista, nell'ordine di presentazione (`"I"`, `"II"`, …).                              |
+| `liste[].candidati`        | I candidati **nell'ordine in cui compaiono sulla scheda** (conta in caso di parità di preferenze).          |
+| `aggiornamentoSecondi`     | Ogni quanti secondi la pagina pubblica ricontrolla i dati (10 se non indicato, almeno 5).                   |
+
+Con un seggio unico il sito mostra l'avanzamento in **schede scrutinate** (per esempio «230 su 471»). Se in futuro
+i seggi fossero più di uno, basta aggiungere una voce in `sezioni` per ognuno: il sito mostrerà anche lo stato di
+ogni seggio e i risultati seggio per seggio.
 
 Di solito per il Consiglio d'Istituto si eleggono 4 studenti con 2 preferenze (3 studenti e 1 preferenza nelle
 scuole fino a 500 iscritti) e per la Consulta provinciale 2 studenti con 1 preferenza: **controlla sempre la
@@ -116,35 +124,38 @@ proprio token.
 
 ### 4. Fai una prova
 
-Prima del giorno delle elezioni apri l'area scrutatori, collegala con il token, inserisci qualche numero finto
-in una sezione e premi **Pubblica**: entro un paio di minuti deve comparire sulla pagina pubblica. Poi, in fondo
-all'area scrutatori, usa **Azzera tutti i risultati**.
+Prima del giorno delle elezioni apri l'area scrutatori, collegala con il token, inserisci qualche numero finto e
+premi **Pubblica**: entro un paio di minuti deve comparire sulla pagina pubblica. Poi, in fondo all'area
+scrutatori, usa **Azzera tutti i risultati**.
 
 ## Il giorno dello spoglio
 
-1. Apri una sezione, scegli **Scrutinio in corso** e inserisci votanti, schede bianche e nulle, voti di lista e
-   preferenze (Invio passa al campo successivo). I numeri restano salvati sul dispositivo anche se chiudi la
-   pagina.
-2. Il riquadro **Controlli** segnala i numeri che non tornano: voti di lista + bianche + nulle diversi dai
-   votanti, più votanti che aventi diritto, troppe preferenze.
-3. Quando la sezione è contata scegli **Scrutinata** e premi **Pubblica**. Si possono pubblicare più sezioni
-   insieme; più scrutatori possono pubblicare contemporaneamente senza cancellarsi i dati a vicenda.
-4. Con **Comunicazione sul sito** puoi mostrare un avviso a tutti (es. «Lo spoglio riprende alle 14»).
-5. Dopo la proclamazione degli eletti da parte della Commissione elettorale spunta **Risultati definitivi** e
+1. Apri l'area scrutatori (con un seggio unico il modulo è già aperto), scegli **Scrutinio in corso** e inserisci
+   il numero dei **votanti** di ogni elezione, poi premi **Pubblica**: sul sito compaiono l'affluenza e la barra
+   delle schede scrutinate.
+2. Durante lo spoglio aggiorna ogni tanto (per esempio ogni 30-50 schede) i totali: voti di lista, preferenze,
+   schede bianche e nulle, e premi **Pubblica**. Invio passa al campo successivo; i numeri restano salvati sul
+   dispositivo anche se chiudi la pagina.
+3. Il riquadro **Controlli** segnala i numeri che non tornano: più schede contate che votanti, più votanti che
+   aventi diritto, troppe preferenze e, a spoglio finito, voti di lista + bianche + nulle diversi dai votanti.
+4. Quando hai contato tutte le schede scegli **Scrutinata** e pubblica.
+5. Con **Comunicazione sul sito** puoi mostrare un avviso a tutti (es. «Lo spoglio riprende alle 14»).
+6. Dopo la proclamazione degli eletti da parte della Commissione elettorale spunta **Risultati definitivi** e
    pubblica.
 
-Senza connessione o senza token puoi comunque inserire i dati e premere **Scarica il file**: poi carichi
-`risultati.json` nella cartella `data/` del repository (su GitHub: **Add file → Upload files**).
+Più scrutatori possono pubblicare contemporaneamente senza cancellarsi i dati a vicenda. Senza connessione o
+senza token puoi comunque inserire i dati e premere **Scarica il file**: poi carichi `risultati.json` nella
+cartella `data/` del repository (su GitHub: **Add file → Upload files**).
 
 ## Come vengono calcolati i risultati
 
 - **Voti validi**: la somma dei voti di lista. Le percentuali delle liste sono calcolate sui voti validi.
-- **Affluenza**: votanti diviso aventi diritto, nelle sezioni che hanno già dati.
+- **Affluenza**: votanti diviso aventi diritto.
 - **Seggi**: metodo D'Hondt. I voti di ogni lista si dividono per 1, 2, 3… e i seggi vanno ai quozienti più alti.
   A parità di quoziente vince la lista con più voti; se anche i voti sono uguali serve un sorteggio (il sito lo
   segnala). Una lista non può avere più seggi dei suoi candidati.
 - **Eletti**: in ogni lista, i candidati con più preferenze; a parità, chi viene prima nell'ordine di lista.
-- Le sezioni «in corso» sono già conteggiate come dati parziali: finché lo spoglio non è finito i seggi sono una
+- I dati «in corso» sono già conteggiati come parziali: finché lo spoglio non è finito i seggi sono una
   proiezione.
 
 Il sito ha valore informativo: fanno fede i verbali della Commissione elettorale.
@@ -169,9 +180,9 @@ npm test    # test dei calcoli e dei file di dati (serve Node.js 20 o più recen
 | --------------------- | -------------------------------------------------------------------------- |
 | `index.html`          | Pagina pubblica                                                            |
 | `admin.html`          | Area scrutatori                                                            |
-| `data/elezioni.json`  | Configurazione: scuola, sezioni, liste, candidati                          |
+| `data/elezioni.json`  | Configurazione: scuola, seggio, liste, candidati                           |
 | `data/risultati.json` | Risultati pubblicati (lo scrive l'area scrutatori)                         |
-| `data/demo/`          | Dati inventati per la demo                                                 |
+| `data/demo/`          | Dati inventati per la demo, comprese le tappe dello spoglio simulato       |
 | `js/calcoli.js`       | Somme, percentuali, metodo D'Hondt, eletti, controlli (testato in `test/`) |
 | `js/pubblico.js`      | Disegno della pagina pubblica e aggiornamento automatico                   |
 | `js/admin.js`         | Area scrutatori: moduli, bozze, pubblicazione                              |

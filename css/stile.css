@@ -930,7 +930,7 @@ main:focus {
 
 .griglia-preferenze {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 20rem), 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr));
   gap: 16px;
 }
 
@@ -1185,7 +1185,7 @@ main:focus {
 
 .elenco-liste {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 18rem), 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
   gap: 16px;
   margin: 0;
   padding: 0;

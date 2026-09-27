@@ -4,33 +4,9 @@
   "titolo": "Elezioni degli studenti 2026/27",
   "dataElezioni": "2026-10-22",
   "repository": "capozzoligiofra/Spoglioelezioni2026",
-  "aggiornamentoSecondi": 30,
+  "aggiornamentoSecondi": 10,
   "sezioni": [
-    { "id": "1A", "aventiDiritto": 19 },
-    { "id": "1B", "aventiDiritto": 27 },
-    { "id": "1C", "aventiDiritto": 21 },
-    { "id": "1D", "aventiDiritto": 20 },
-    { "id": "1E", "aventiDiritto": 25 },
-    { "id": "2A", "aventiDiritto": 23 },
-    { "id": "2B", "aventiDiritto": 21 },
-    { "id": "2C", "aventiDiritto": 25 },
-    { "id": "2D", "aventiDiritto": 25 },
-    { "id": "2E", "aventiDiritto": 23 },
-    { "id": "3A", "aventiDiritto": 25 },
-    { "id": "3B", "aventiDiritto": 24 },
-    { "id": "3C", "aventiDiritto": 26 },
-    { "id": "3D", "aventiDiritto": 21 },
-    { "id": "3E", "aventiDiritto": 22 },
-    { "id": "4A", "aventiDiritto": 25 },
-    { "id": "4B", "aventiDiritto": 25 },
-    { "id": "4C", "aventiDiritto": 19 },
-    { "id": "4D", "aventiDiritto": 25 },
-    { "id": "4E", "aventiDiritto": 23 },
-    { "id": "5A", "aventiDiritto": 27 },
-    { "id": "5B", "aventiDiritto": 26 },
-    { "id": "5C", "aventiDiritto": 20 },
-    { "id": "5D", "aventiDiritto": 23 },
-    { "id": "5E", "aventiDiritto": 27 }
+    { "id": "seggio", "nome": "Seggio unico", "aventiDiritto": 600 }
   ],
   "elezioni": [
     {
@@ -63,17 +39,9 @@
             { "nome": "Francesca De Luca", "classe": "3C" },
             { "nome": "Davide Mancini", "classe": "5E" },
             { "nome": "Elena Costa", "classe": "2D" },
-            { "nome": "Tommaso Giordano", "classe": "4B" }
-          ]
-        },
-        {
-          "numero": "III",
-          "nome": "Voce agli Studenti",
-          "candidati": [
+            { "nome": "Tommaso Giordano", "classe": "4B" },
             { "nome": "Beatrice Rizzo", "classe": "5C" },
-            { "nome": "Riccardo Lombardi", "classe": "4D" },
-            { "nome": "Alice Moretti", "classe": "3A" },
-            { "nome": "Gabriele Barbieri", "classe": "2C" }
+            { "nome": "Riccardo Lombardi", "classe": "4D" }
           ]
         }
       ]
@@ -101,7 +69,8 @@
           "candidati": [
             { "nome": "Anna Ferrara", "classe": "5D" },
             { "nome": "Samuele Caruso", "classe": "4E" },
-            { "nome": "Sara Galli", "classe": "3B" }
+            { "nome": "Sara Galli", "classe": "3B" },
+            { "nome": "Gabriele Barbieri", "classe": "2C" }
           ]
         }
       ]

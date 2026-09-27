@@ -1,0 +1,745 @@
+{
+  "passi": [
+    {
+      "sezioni": {
+        "seggio": {
+          "stato": "in-corso",
+          "elezioni": {
+            "consiglio-istituto": {
+              "votanti": 471,
+              "bianche": 0,
+              "nulle": 0,
+              "liste": {
+                "I": {
+                  "voti": 0,
+                  "preferenze": { "Giulia Bianchi": 0, "Marco Esposito": 0, "Sofia Romano": 0, "Luca Colombo": 0, "Aurora Ricci": 0, "Matteo Marino": 0, "Chiara Greco": 0, "Alessandro Bruno": 0 }
+                },
+                "II": {
+                  "voti": 0,
+                  "preferenze": { "Martina Gallo": 0, "Lorenzo Conti": 0, "Francesca De Luca": 0, "Davide Mancini": 0, "Elena Costa": 0, "Tommaso Giordano": 0, "Beatrice Rizzo": 0, "Riccardo Lombardi": 0 }
+                }
+              }
+            },
+            "consulta": {
+              "votanti": 466,
+              "bianche": 0,
+              "nulle": 0,
+              "liste": {
+                "I": {
+                  "voti": 0,
+                  "preferenze": { "Emma Fontana": 0, "Nicolò Santoro": 0, "Giorgia Mariani": 0, "Pietro Rinaldi": 0 }
+                },
+                "II": {
+                  "voti": 0,
+                  "preferenze": { "Anna Ferrara": 0, "Samuele Caruso": 0, "Sara Galli": 0, "Gabriele Barbieri": 0 }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "sezioni": {
+        "seggio": {
+          "stato": "in-corso",
+          "elezioni": {
+            "consiglio-istituto": {
+              "votanti": 471,
+              "bianche": 3,
+              "nulle": 0,
+              "liste": {
+                "I": {
+                  "voti": 15,
+                  "preferenze": { "Giulia Bianchi": 3, "Marco Esposito": 4, "Sofia Romano": 3, "Luca Colombo": 2, "Aurora Ricci": 2, "Matteo Marino": 1, "Chiara Greco": 1, "Alessandro Bruno": 1 }
+                },
+                "II": {
+                  "voti": 7,
+                  "preferenze": { "Martina Gallo": 2, "Lorenzo Conti": 3, "Francesca De Luca": 1, "Davide Mancini": 1, "Elena Costa": 0, "Tommaso Giordano": 3, "Beatrice Rizzo": 0, "Riccardo Lombardi": 1 }
+                }
+              }
+            },
+            "consulta": {
+              "votanti": 466,
+              "bianche": 0,
+              "nulle": 1,
+              "liste": {
+                "I": {
+                  "voti": 14,
+                  "preferenze": { "Emma Fontana": 5, "Nicolò Santoro": 5, "Giorgia Mariani": 1, "Pietro Rinaldi": 1 }
+                },
+                "II": {
+                  "voti": 10,
+                  "preferenze": { "Anna Ferrara": 3, "Samuele Caruso": 3, "Sara Galli": 2, "Gabriele Barbieri": 0 }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "sezioni": {
+        "seggio": {
+          "stato": "in-corso",
+          "elezioni": {
+            "consiglio-istituto": {
+              "votanti": 471,
+              "bianche": 5,
+              "nulle": 1,
+              "liste": {
+                "I": {
+                  "voti": 31,
+                  "preferenze": { "Giulia Bianchi": 9, "Marco Esposito": 10, "Sofia Romano": 7, "Luca Colombo": 7, "Aurora Ricci": 4, "Matteo Marino": 3, "Chiara Greco": 1, "Alessandro Bruno": 2 }
+                },
+                "II": {
+                  "voti": 13,
+                  "preferenze": { "Martina Gallo": 5, "Lorenzo Conti": 6, "Francesca De Luca": 1, "Davide Mancini": 1, "Elena Costa": 0, "Tommaso Giordano": 5, "Beatrice Rizzo": 0, "Riccardo Lombardi": 1 }
+                }
+              }
+            },
+            "consulta": {
+              "votanti": 466,
+              "bianche": 0,
+              "nulle": 2,
+              "liste": {
+                "I": {
+                  "voti": 27,
+                  "preferenze": { "Emma Fontana": 7, "Nicolò Santoro": 9, "Giorgia Mariani": 1, "Pietro Rinaldi": 4 }
+                },
+                "II": {
+                  "voti": 21,
+                  "preferenze": { "Anna Ferrara": 9, "Samuele Caruso": 5, "Sara Galli": 3, "Gabriele Barbieri": 0 }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "sezioni": {
+        "seggio": {
+          "stato": "in-corso",
+          "elezioni": {
+            "consiglio-istituto": {
+              "votanti": 471,
+              "bianche": 5,
+              "nulle": 1,
+              "liste": {
+                "I": {
+                  "voti": 42,
+                  "preferenze": { "Giulia Bianchi": 11, "Marco Esposito": 13, "Sofia Romano": 10, "Luca Colombo": 9, "Aurora Ricci": 4, "Matteo Marino": 3, "Chiara Greco": 2, "Alessandro Bruno": 3 }
+                },
+                "II": {
+                  "voti": 27,
+                  "preferenze": { "Martina Gallo": 12, "Lorenzo Conti": 11, "Francesca De Luca": 6, "Davide Mancini": 2, "Elena Costa": 0, "Tommaso Giordano": 5, "Beatrice Rizzo": 0, "Riccardo Lombardi": 2 }
+                }
+              }
+            },
+            "consulta": {
+              "votanti": 466,
+              "bianche": 1,
+              "nulle": 3,
+              "liste": {
+                "I": {
+                  "voti": 42,
+                  "preferenze": { "Emma Fontana": 13, "Nicolò Santoro": 16, "Giorgia Mariani": 1, "Pietro Rinaldi": 4 }
+                },
+                "II": {
+                  "voti": 29,
+                  "preferenze": { "Anna Ferrara": 14, "Samuele Caruso": 5, "Sara Galli": 4, "Gabriele Barbieri": 1 }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "sezioni": {
+        "seggio": {
+          "stato": "in-corso",
+          "elezioni": {
+            "consiglio-istituto": {
+              "votanti": 471,
+              "bianche": 6,
+              "nulle": 1,
+              "liste": {
+                "I": {
+                  "voti": 55,
+                  "preferenze": { "Giulia Bianchi": 16, "Marco Esposito": 17, "Sofia Romano": 14, "Luca Colombo": 11, "Aurora Ricci": 5, "Matteo Marino": 4, "Chiara Greco": 2, "Alessandro Bruno": 3 }
+                },
+                "II": {
+                  "voti": 38,
+                  "preferenze": { "Martina Gallo": 15, "Lorenzo Conti": 15, "Francesca De Luca": 8, "Davide Mancini": 4, "Elena Costa": 0, "Tommaso Giordano": 5, "Beatrice Rizzo": 1, "Riccardo Lombardi": 3 }
+                }
+              }
+            },
+            "consulta": {
+              "votanti": 466,
+              "bianche": 1,
+              "nulle": 3,
+              "liste": {
+                "I": {
+                  "voti": 52,
+                  "preferenze": { "Emma Fontana": 16, "Nicolò Santoro": 20, "Giorgia Mariani": 2, "Pietro Rinaldi": 4 }
+                },
+                "II": {
+                  "voti": 44,
+                  "preferenze": { "Anna Ferrara": 18, "Samuele Caruso": 8, "Sara Galli": 4, "Gabriele Barbieri": 3 }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "sezioni": {
+        "seggio": {
+          "stato": "in-corso",
+          "elezioni": {
+            "consiglio-istituto": {
+              "votanti": 471,
+              "bianche": 6,
+              "nulle": 1,
+              "liste": {
+                "I": {
+                  "voti": 69,
+                  "preferenze": { "Giulia Bianchi": 17, "Marco Esposito": 21, "Sofia Romano": 19, "Luca Colombo": 12, "Aurora Ricci": 6, "Matteo Marino": 4, "Chiara Greco": 4, "Alessandro Bruno": 3 }
+                },
+                "II": {
+                  "voti": 49,
+                  "preferenze": { "Martina Gallo": 17, "Lorenzo Conti": 20, "Francesca De Luca": 11, "Davide Mancini": 7, "Elena Costa": 1, "Tommaso Giordano": 6, "Beatrice Rizzo": 1, "Riccardo Lombardi": 4 }
+                }
+              }
+            },
+            "consulta": {
+              "votanti": 466,
+              "bianche": 2,
+              "nulle": 3,
+              "liste": {
+                "I": {
+                  "voti": 66,
+                  "preferenze": { "Emma Fontana": 21, "Nicolò Santoro": 23, "Giorgia Mariani": 3, "Pietro Rinaldi": 6 }
+                },
+                "II": {
+                  "voti": 54,
+                  "preferenze": { "Anna Ferrara": 20, "Samuele Caruso": 9, "Sara Galli": 8, "Gabriele Barbieri": 3 }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "sezioni": {
+        "seggio": {
+          "stato": "in-corso",
+          "elezioni": {
+            "consiglio-istituto": {
+              "votanti": 471,
+              "bianche": 6,
+              "nulle": 1,
+              "liste": {
+                "I": {
+                  "voti": 81,
+                  "preferenze": { "Giulia Bianchi": 20, "Marco Esposito": 22, "Sofia Romano": 22, "Luca Colombo": 17, "Aurora Ricci": 8, "Matteo Marino": 7, "Chiara Greco": 5, "Alessandro Bruno": 3 }
+                },
+                "II": {
+                  "voti": 62,
+                  "preferenze": { "Martina Gallo": 23, "Lorenzo Conti": 22, "Francesca De Luca": 13, "Davide Mancini": 13, "Elena Costa": 1, "Tommaso Giordano": 8, "Beatrice Rizzo": 1, "Riccardo Lombardi": 4 }
+                }
+              }
+            },
+            "consulta": {
+              "votanti": 466,
+              "bianche": 3,
+              "nulle": 4,
+              "liste": {
+                "I": {
+                  "voti": 77,
+                  "preferenze": { "Emma Fontana": 26, "Nicolò Santoro": 26, "Giorgia Mariani": 4, "Pietro Rinaldi": 6 }
+                },
+                "II": {
+                  "voti": 66,
+                  "preferenze": { "Anna Ferrara": 25, "Samuele Caruso": 9, "Sara Galli": 10, "Gabriele Barbieri": 4 }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "sezioni": {
+        "seggio": {
+          "stato": "in-corso",
+          "elezioni": {
+            "consiglio-istituto": {
+              "votanti": 471,
+              "bianche": 6,
+              "nulle": 2,
+              "liste": {
+                "I": {
+                  "voti": 94,
+                  "preferenze": { "Giulia Bianchi": 24, "Marco Esposito": 26, "Sofia Romano": 23, "Luca Colombo": 18, "Aurora Ricci": 9, "Matteo Marino": 7, "Chiara Greco": 5, "Alessandro Bruno": 3 }
+                },
+                "II": {
+                  "voti": 73,
+                  "preferenze": { "Martina Gallo": 29, "Lorenzo Conti": 29, "Francesca De Luca": 13, "Davide Mancini": 14, "Elena Costa": 2, "Tommaso Giordano": 8, "Beatrice Rizzo": 2, "Riccardo Lombardi": 4 }
+                }
+              }
+            },
+            "consulta": {
+              "votanti": 466,
+              "bianche": 4,
+              "nulle": 6,
+              "liste": {
+                "I": {
+                  "voti": 88,
+                  "preferenze": { "Emma Fontana": 30, "Nicolò Santoro": 29, "Giorgia Mariani": 4, "Pietro Rinaldi": 7 }
+                },
+                "II": {
+                  "voti": 77,
+                  "preferenze": { "Anna Ferrara": 29, "Samuele Caruso": 14, "Sara Galli": 12, "Gabriele Barbieri": 4 }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "sezioni": {
+        "seggio": {
+          "stato": "in-corso",
+          "elezioni": {
+            "consiglio-istituto": {
+              "votanti": 471,
+              "bianche": 6,
+              "nulle": 2,
+              "liste": {
+                "I": {
+                  "voti": 110,
+                  "preferenze": { "Giulia Bianchi": 27, "Marco Esposito": 31, "Sofia Romano": 27, "Luca Colombo": 23, "Aurora Ricci": 12, "Matteo Marino": 8, "Chiara Greco": 7, "Alessandro Bruno": 3 }
+                },
+                "II": {
+                  "voti": 82,
+                  "preferenze": { "Martina Gallo": 31, "Lorenzo Conti": 30, "Francesca De Luca": 16, "Davide Mancini": 17, "Elena Costa": 4, "Tommaso Giordano": 9, "Beatrice Rizzo": 2, "Riccardo Lombardi": 4 }
+                }
+              }
+            },
+            "consulta": {
+              "votanti": 466,
+              "bianche": 4,
+              "nulle": 7,
+              "liste": {
+                "I": {
+                  "voti": 98,
+                  "preferenze": { "Emma Fontana": 34, "Nicolò Santoro": 31, "Giorgia Mariani": 6, "Pietro Rinaldi": 8 }
+                },
+                "II": {
+                  "voti": 91,
+                  "preferenze": { "Anna Ferrara": 33, "Samuele Caruso": 16, "Sara Galli": 13, "Gabriele Barbieri": 7 }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "sezioni": {
+        "seggio": {
+          "stato": "in-corso",
+          "elezioni": {
+            "consiglio-istituto": {
+              "votanti": 471,
+              "bianche": 7,
+              "nulle": 2,
+              "liste": {
+                "I": {
+                  "voti": 130,
+                  "preferenze": { "Giulia Bianchi": 33, "Marco Esposito": 33, "Sofia Romano": 32, "Luca Colombo": 26, "Aurora Ricci": 16, "Matteo Marino": 8, "Chiara Greco": 10, "Alessandro Bruno": 4 }
+                },
+                "II": {
+                  "voti": 86,
+                  "preferenze": { "Martina Gallo": 32, "Lorenzo Conti": 31, "Francesca De Luca": 16, "Davide Mancini": 17, "Elena Costa": 4, "Tommaso Giordano": 9, "Beatrice Rizzo": 2, "Riccardo Lombardi": 5 }
+                }
+              }
+            },
+            "consulta": {
+              "votanti": 466,
+              "bianche": 5,
+              "nulle": 9,
+              "liste": {
+                "I": {
+                  "voti": 110,
+                  "preferenze": { "Emma Fontana": 40, "Nicolò Santoro": 32, "Giorgia Mariani": 7, "Pietro Rinaldi": 8 }
+                },
+                "II": {
+                  "voti": 101,
+                  "preferenze": { "Anna Ferrara": 37, "Samuele Caruso": 18, "Sara Galli": 13, "Gabriele Barbieri": 7 }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "sezioni": {
+        "seggio": {
+          "stato": "in-corso",
+          "elezioni": {
+            "consiglio-istituto": {
+              "votanti": 471,
+              "bianche": 7,
+              "nulle": 3,
+              "liste": {
+                "I": {
+                  "voti": 143,
+                  "preferenze": { "Giulia Bianchi": 40, "Marco Esposito": 38, "Sofia Romano": 34, "Luca Colombo": 29, "Aurora Ricci": 16, "Matteo Marino": 8, "Chiara Greco": 10, "Alessandro Bruno": 4 }
+                },
+                "II": {
+                  "voti": 97,
+                  "preferenze": { "Martina Gallo": 36, "Lorenzo Conti": 34, "Francesca De Luca": 18, "Davide Mancini": 18, "Elena Costa": 4, "Tommaso Giordano": 10, "Beatrice Rizzo": 3, "Riccardo Lombardi": 5 }
+                }
+              }
+            },
+            "consulta": {
+              "votanti": 466,
+              "bianche": 5,
+              "nulle": 9,
+              "liste": {
+                "I": {
+                  "voti": 125,
+                  "preferenze": { "Emma Fontana": 42, "Nicolò Santoro": 37, "Giorgia Mariani": 8, "Pietro Rinaldi": 9 }
+                },
+                "II": {
+                  "voti": 111,
+                  "preferenze": { "Anna Ferrara": 43, "Samuele Caruso": 18, "Sara Galli": 15, "Gabriele Barbieri": 8 }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "sezioni": {
+        "seggio": {
+          "stato": "in-corso",
+          "elezioni": {
+            "consiglio-istituto": {
+              "votanti": 471,
+              "bianche": 7,
+              "nulle": 3,
+              "liste": {
+                "I": {
+                  "voti": 159,
+                  "preferenze": { "Giulia Bianchi": 45, "Marco Esposito": 42, "Sofia Romano": 37, "Luca Colombo": 31, "Aurora Ricci": 18, "Matteo Marino": 9, "Chiara Greco": 11, "Alessandro Bruno": 5 }
+                },
+                "II": {
+                  "voti": 106,
+                  "preferenze": { "Martina Gallo": 40, "Lorenzo Conti": 37, "Francesca De Luca": 19, "Davide Mancini": 19, "Elena Costa": 6, "Tommaso Giordano": 10, "Beatrice Rizzo": 3, "Riccardo Lombardi": 6 }
+                }
+              }
+            },
+            "consulta": {
+              "votanti": 466,
+              "bianche": 5,
+              "nulle": 10,
+              "liste": {
+                "I": {
+                  "voti": 136,
+                  "preferenze": { "Emma Fontana": 47, "Nicolò Santoro": 40, "Giorgia Mariani": 8, "Pietro Rinaldi": 9 }
+                },
+                "II": {
+                  "voti": 124,
+                  "preferenze": { "Anna Ferrara": 46, "Samuele Caruso": 23, "Sara Galli": 16, "Gabriele Barbieri": 10 }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "sezioni": {
+        "seggio": {
+          "stato": "in-corso",
+          "elezioni": {
+            "consiglio-istituto": {
+              "votanti": 471,
+              "bianche": 7,
+              "nulle": 3,
+              "liste": {
+                "I": {
+                  "voti": 168,
+                  "preferenze": { "Giulia Bianchi": 47, "Marco Esposito": 46, "Sofia Romano": 39, "Luca Colombo": 31, "Aurora Ricci": 19, "Matteo Marino": 10, "Chiara Greco": 11, "Alessandro Bruno": 6 }
+                },
+                "II": {
+                  "voti": 122,
+                  "preferenze": { "Martina Gallo": 43, "Lorenzo Conti": 42, "Francesca De Luca": 24, "Davide Mancini": 21, "Elena Costa": 7, "Tommaso Giordano": 12, "Beatrice Rizzo": 3, "Riccardo Lombardi": 6 }
+                }
+              }
+            },
+            "consulta": {
+              "votanti": 466,
+              "bianche": 5,
+              "nulle": 12,
+              "liste": {
+                "I": {
+                  "voti": 147,
+                  "preferenze": { "Emma Fontana": 52, "Nicolò Santoro": 45, "Giorgia Mariani": 8, "Pietro Rinaldi": 9 }
+                },
+                "II": {
+                  "voti": 136,
+                  "preferenze": { "Anna Ferrara": 51, "Samuele Caruso": 25, "Sara Galli": 16, "Gabriele Barbieri": 10 }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "sezioni": {
+        "seggio": {
+          "stato": "in-corso",
+          "elezioni": {
+            "consiglio-istituto": {
+              "votanti": 471,
+              "bianche": 7,
+              "nulle": 4,
+              "liste": {
+                "I": {
+                  "voti": 182,
+                  "preferenze": { "Giulia Bianchi": 52, "Marco Esposito": 46, "Sofia Romano": 42, "Luca Colombo": 33, "Aurora Ricci": 20, "Matteo Marino": 12, "Chiara Greco": 12, "Alessandro Bruno": 9 }
+                },
+                "II": {
+                  "voti": 132,
+                  "preferenze": { "Martina Gallo": 45, "Lorenzo Conti": 45, "Francesca De Luca": 26, "Davide Mancini": 23, "Elena Costa": 7, "Tommaso Giordano": 13, "Beatrice Rizzo": 3, "Riccardo Lombardi": 6 }
+                }
+              }
+            },
+            "consulta": {
+              "votanti": 466,
+              "bianche": 6,
+              "nulle": 13,
+              "liste": {
+                "I": {
+                  "voti": 162,
+                  "preferenze": { "Emma Fontana": 56, "Nicolò Santoro": 48, "Giorgia Mariani": 10, "Pietro Rinaldi": 11 }
+                },
+                "II": {
+                  "voti": 144,
+                  "preferenze": { "Anna Ferrara": 54, "Samuele Caruso": 27, "Sara Galli": 16, "Gabriele Barbieri": 10 }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "sezioni": {
+        "seggio": {
+          "stato": "in-corso",
+          "elezioni": {
+            "consiglio-istituto": {
+              "votanti": 471,
+              "bianche": 8,
+              "nulle": 5,
+              "liste": {
+                "I": {
+                  "voti": 198,
+                  "preferenze": { "Giulia Bianchi": 61, "Marco Esposito": 50, "Sofia Romano": 48, "Luca Colombo": 35, "Aurora Ricci": 21, "Matteo Marino": 13, "Chiara Greco": 14, "Alessandro Bruno": 11 }
+                },
+                "II": {
+                  "voti": 139,
+                  "preferenze": { "Martina Gallo": 48, "Lorenzo Conti": 46, "Francesca De Luca": 28, "Davide Mancini": 23, "Elena Costa": 8, "Tommaso Giordano": 13, "Beatrice Rizzo": 3, "Riccardo Lombardi": 6 }
+                }
+              }
+            },
+            "consulta": {
+              "votanti": 466,
+              "bianche": 7,
+              "nulle": 14,
+              "liste": {
+                "I": {
+                  "voti": 176,
+                  "preferenze": { "Emma Fontana": 61, "Nicolò Santoro": 52, "Giorgia Mariani": 12, "Pietro Rinaldi": 12 }
+                },
+                "II": {
+                  "voti": 153,
+                  "preferenze": { "Anna Ferrara": 56, "Samuele Caruso": 27, "Sara Galli": 17, "Gabriele Barbieri": 11 }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "sezioni": {
+        "seggio": {
+          "stato": "in-corso",
+          "elezioni": {
+            "consiglio-istituto": {
+              "votanti": 471,
+              "bianche": 11,
+              "nulle": 6,
+              "liste": {
+                "I": {
+                  "voti": 207,
+                  "preferenze": { "Giulia Bianchi": 64, "Marco Esposito": 52, "Sofia Romano": 53, "Luca Colombo": 35, "Aurora Ricci": 21, "Matteo Marino": 14, "Chiara Greco": 14, "Alessandro Bruno": 11 }
+                },
+                "II": {
+                  "voti": 151,
+                  "preferenze": { "Martina Gallo": 51, "Lorenzo Conti": 49, "Francesca De Luca": 31, "Davide Mancini": 24, "Elena Costa": 9, "Tommaso Giordano": 14, "Beatrice Rizzo": 3, "Riccardo Lombardi": 6 }
+                }
+              }
+            },
+            "consulta": {
+              "votanti": 466,
+              "bianche": 8,
+              "nulle": 15,
+              "liste": {
+                "I": {
+                  "voti": 188,
+                  "preferenze": { "Emma Fontana": 67, "Nicolò Santoro": 54, "Giorgia Mariani": 12, "Pietro Rinaldi": 14 }
+                },
+                "II": {
+                  "voti": 164,
+                  "preferenze": { "Anna Ferrara": 63, "Samuele Caruso": 28, "Sara Galli": 17, "Gabriele Barbieri": 12 }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "sezioni": {
+        "seggio": {
+          "stato": "in-corso",
+          "elezioni": {
+            "consiglio-istituto": {
+              "votanti": 471,
+              "bianche": 12,
+              "nulle": 6,
+              "liste": {
+                "I": {
+                  "voti": 220,
+                  "preferenze": { "Giulia Bianchi": 68, "Marco Esposito": 56, "Sofia Romano": 56, "Luca Colombo": 37, "Aurora Ricci": 22, "Matteo Marino": 16, "Chiara Greco": 15, "Alessandro Bruno": 11 }
+                },
+                "II": {
+                  "voti": 162,
+                  "preferenze": { "Martina Gallo": 54, "Lorenzo Conti": 52, "Francesca De Luca": 35, "Davide Mancini": 27, "Elena Costa": 9, "Tommaso Giordano": 14, "Beatrice Rizzo": 4, "Riccardo Lombardi": 7 }
+                }
+              }
+            },
+            "consulta": {
+              "votanti": 466,
+              "bianche": 9,
+              "nulle": 16,
+              "liste": {
+                "I": {
+                  "voti": 201,
+                  "preferenze": { "Emma Fontana": 72, "Nicolò Santoro": 59, "Giorgia Mariani": 13, "Pietro Rinaldi": 15 }
+                },
+                "II": {
+                  "voti": 174,
+                  "preferenze": { "Anna Ferrara": 65, "Samuele Caruso": 30, "Sara Galli": 19, "Gabriele Barbieri": 14 }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "sezioni": {
+        "seggio": {
+          "stato": "in-corso",
+          "elezioni": {
+            "consiglio-istituto": {
+              "votanti": 471,
+              "bianche": 12,
+              "nulle": 6,
+              "liste": {
+                "I": {
+                  "voti": 232,
+                  "preferenze": { "Giulia Bianchi": 73, "Marco Esposito": 62, "Sofia Romano": 58, "Luca Colombo": 37, "Aurora Ricci": 22, "Matteo Marino": 16, "Chiara Greco": 15, "Alessandro Bruno": 13 }
+                },
+                "II": {
+                  "voti": 175,
+                  "preferenze": { "Martina Gallo": 60, "Lorenzo Conti": 57, "Francesca De Luca": 38, "Davide Mancini": 32, "Elena Costa": 10, "Tommaso Giordano": 15, "Beatrice Rizzo": 4, "Riccardo Lombardi": 8 }
+                }
+              }
+            },
+            "consulta": {
+              "votanti": 466,
+              "bianche": 11,
+              "nulle": 16,
+              "liste": {
+                "I": {
+                  "voti": 213,
+                  "preferenze": { "Emma Fontana": 76, "Nicolò Santoro": 62, "Giorgia Mariani": 15, "Pietro Rinaldi": 16 }
+                },
+                "II": {
+                  "voti": 185,
+                  "preferenze": { "Anna Ferrara": 70, "Samuele Caruso": 33, "Sara Galli": 20, "Gabriele Barbieri": 15 }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "sezioni": {
+        "seggio": {
+          "stato": "in-corso",
+          "elezioni": {
+            "consiglio-istituto": {
+              "votanti": 471,
+              "bianche": 13,
+              "nulle": 6,
+              "liste": {
+                "I": {
+                  "voti": 249,
+                  "preferenze": { "Giulia Bianchi": 76, "Marco Esposito": 65, "Sofia Romano": 62, "Luca Colombo": 39, "Aurora Ricci": 22, "Matteo Marino": 18, "Chiara Greco": 18, "Alessandro Bruno": 14 }
+                },
+                "II": {
+                  "voti": 182,
+                  "preferenze": { "Martina Gallo": 61, "Lorenzo Conti": 60, "Francesca De Luca": 40, "Davide Mancini": 34, "Elena Costa": 10, "Tommaso Giordano": 15, "Beatrice Rizzo": 4, "Riccardo Lombardi": 9 }
+                }
+              }
+            },
+            "consulta": {
+              "votanti": 466,
+              "bianche": 12,
+              "nulle": 16,
+              "liste": {
+                "I": {
+                  "voti": 224,
+                  "preferenze": { "Emma Fontana": 80, "Nicolò Santoro": 65, "Giorgia Mariani": 16, "Pietro Rinaldi": 18 }
+                },
+                "II": {
+                  "voti": 198,
+                  "preferenze": { "Anna Ferrara": 74, "Samuele Caruso": 35, "Sara Galli": 22, "Gabriele Barbieri": 15 }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
+}
