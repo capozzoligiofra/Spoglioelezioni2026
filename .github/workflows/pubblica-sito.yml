@@ -1,0 +1,39 @@
+# Pubblica il sito su GitHub Pages a ogni modifica del branch principale,
+# comprese le pubblicazioni dei risultati fatte dall'area scrutatori.
+# Con un workflow come questo non vale il limite di circa 10 aggiornamenti
+# all'ora della pubblicazione "Deploy from a branch".
+#
+# Per attivarlo: Settings → Pages → Source: GitHub Actions.
+name: Pubblica il sito
+
+on:
+  push:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Una pubblicazione alla volta: se nel frattempo ne arrivano altre,
+# parte solo la più recente (che contiene già tutti i dati).
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  pubblica:
+    # Solo dal branch principale del repository, qualunque sia il suo nome.
+    if: github.ref_name == github.event.repository.default_branch
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+      - id: deployment
+        uses: actions/deploy-pages@v4

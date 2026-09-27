@@ -32,13 +32,16 @@ ai risultati (c'è un collegamento in fondo alla pagina pubblica): chiunque può
 
 ### 1. Pubblica il sito con GitHub Pages
 
-1. Il codice deve stare sul branch principale del repository (di solito `main`).
-2. Su GitHub apri **Settings → Pages**. In «Build and deployment» scegli **Source: Deploy from a branch**, poi il
-   branch `main` e la cartella `/ (root)`, e premi **Save**.
-3. Dopo un paio di minuti il sito è online, per questo repository all'indirizzo
+1. Il codice deve stare sul branch principale del repository (di solito `main`): il sito viene pubblicato da lì.
+2. Su GitHub apri **Settings → Pages** e in «Build and deployment» scegli **Source: GitHub Actions**.
+3. Apri la scheda **Actions**, scegli **Pubblica il sito** e premi **Run workflow** (dalle volte successive parte
+   da solo a ogni modifica, comprese le pubblicazioni dei risultati).
+4. Dopo un paio di minuti il sito è online, per questo repository all'indirizzo
    `https://capozzoligiofra.github.io/Spoglioelezioni2026/`.
 
-GitHub Pages è gratuito per i repository pubblici.
+GitHub Pages è gratuito per i repository pubblici. Il sito si pubblica con un workflow di GitHub Actions
+(`.github/workflows/pubblica-sito.yml`) e non con «Deploy from a branch», perché quest'ultimo ha un limite di
+circa 10 aggiornamenti all'ora: troppo pochi durante lo spoglio.
 
 ### 2. Inserisci i dati delle elezioni
 
