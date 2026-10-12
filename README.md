@@ -130,22 +130,41 @@ i dati sono online e quanto ci hanno messo). Poi, in fondo all'area scrutatori, 
 
 ## Il giorno dello spoglio
 
-1. Apri l'area scrutatori (con un seggio unico il modulo è già aperto), scegli **Scrutinio in corso** e inserisci
-   il numero dei **votanti** di ogni elezione, poi premi **Pubblica**: sul sito compaiono l'affluenza e la barra
-   delle schede scrutinate.
-2. Durante lo spoglio aggiorna ogni tanto (per esempio ogni 30-50 schede) i totali: voti di lista, preferenze,
-   schede bianche e nulle, e premi **Pubblica**. Invio passa al campo successivo; i numeri restano salvati sul
-   dispositivo anche se chiudi la pagina.
-3. Il riquadro **Controlli** segnala i numeri che non tornano: più schede contate che votanti, più votanti che
-   aventi diritto, troppe preferenze e, a spoglio finito, voti di lista + bianche + nulle diversi dai votanti.
-4. Quando hai contato tutte le schede scegli **Scrutinata** e pubblica.
-5. Con **Comunicazione sul sito** puoi mostrare un avviso a tutti (es. «Lo spoglio riprende alle 14»).
-6. Dopo la proclamazione degli eletti da parte della Commissione elettorale spunta **Risultati definitivi** e
+L'area scrutatori ha due modi per inserire i voti, si sceglie in cima al seggio.
+
+**Scheda per scheda** (consigliato, fatto per il telefono). Si conta mentre le schede vengono lette ad alta voce:
+
+1. In alto scegli l'elezione che state contando (Consiglio d'Istituto o Consulta) e scrivi il numero dei **votanti**
+   preso dal registro.
+2. Per ogni scheda tocca la **lista** votata, oppure direttamente i **candidati** con la preferenza (la lista si
+   seleziona da sola; oltre il numero massimo di preferenze il tasto non accetta altri nomi), oppure **Bianca** o
+   **Nulla**. Poi premi **Conferma scheda** in basso. Il telefono vibra e il numero della scheda avanza.
+3. Se sbagli, **Annulla l'ultima scheda** toglie l'ultima registrata.
+4. In **Pubblica in automatico** scegli ogni quante schede mandare i numeri sul sito (10, 20 o 50; i numeri
+   partono anche dopo 2 minuti senza schede nuove). Puoi sempre premere **Pubblica** a mano.
+
+Le schede contate restano salvate sul telefono anche se la pagina si chiude o manca la connessione: vengono
+pubblicate appena possibile.
+
+**Ogni elezione va contata su un solo telefono.** Due telefoni possono contare insieme elezioni diverse (uno il
+Consiglio, uno la Consulta) senza cancellarsi i numeri. Se invece qualcuno pubblica da un altro dispositivo la
+stessa elezione che stai contando, la pubblicazione automatica si ferma e ti avvisa, invece di sovrascrivere.
+
+**Totali.** Si scrivono a mano i numeri complessivi (utile per correggere o per copiare il verbale). Il riquadro
+**Controlli** segnala i numeri che non tornano: più schede contate che votanti, più votanti che aventi diritto,
+troppe preferenze e, a spoglio finito, voti di lista + bianche + nulle diversi dai votanti.
+
+Alla fine:
+
+1. Apri **Totali**, confronta i numeri con il verbale cartaceo, scegli **Scrutinata** e pubblica (solo quando
+   avete finito tutte e due le elezioni, perché lo stato vale per l'intero seggio).
+2. Con **Comunicazione sul sito** puoi mostrare un avviso a tutti (es. «Lo spoglio riprende alle 14»).
+3. Dopo la proclamazione degli eletti da parte della Commissione elettorale spunta **Risultati definitivi** e
    pubblica.
 
-Più scrutatori possono pubblicare contemporaneamente senza cancellarsi i dati a vicenda. Senza connessione o
-senza token puoi comunque inserire i dati e premere **Scarica il file**: poi carichi `risultati.json` nella
-cartella `data/` del repository (su GitHub: **Add file → Upload files**).
+Senza connessione o senza token puoi comunque inserire i dati e premere **Scarica il file dei risultati** (in
+fondo all'area scrutatori): poi carichi `risultati.json` nella cartella `data/` del repository (su GitHub:
+**Add file → Upload files**).
 
 ## Come vengono calcolati i risultati
 
@@ -186,5 +205,6 @@ npm test    # test dei calcoli e dei file di dati (serve Node.js 20 o più recen
 | `js/calcoli.js`       | Somme, percentuali, metodo D'Hondt, eletti, controlli (testato in `test/`) |
 | `js/pubblico.js`      | Disegno della pagina pubblica e aggiornamento automatico                   |
 | `js/admin.js`         | Area scrutatori: moduli, bozze, pubblicazione                              |
+| `js/conteggio.js`     | Conteggio scheda per scheda (tasti per liste e candidati)                  |
 | `js/github.js`        | Lettura e scrittura di `data/risultati.json` con le API di GitHub          |
 | `css/stile.css`       | Stile, tema chiaro e scuro, colori delle liste                             |

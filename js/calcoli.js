@@ -410,49 +410,87 @@ export function calcolaElezione(config, elezione, risultatiGrezzi) {
 // ---------------------------------------------------------------------------
 
 /**
- * Riscrive i dati di una sezione in forma "canonica": solo le elezioni,
- * liste e candidati della configurazione, tutti i numeri interi, sempre
- * nello stesso ordine. Così due versioni si confrontano con JSON.stringify.
+ * Riscrive i dati di un'elezione in forma "canonica": solo le liste e i
+ * candidati della configurazione, tutti i numeri interi, sempre nello stesso
+ * ordine. Così due versioni si confrontano con JSON.stringify.
  */
+export function elezioneCanonica(elezione, dati) {
+  const liste = {};
+  for (const lista of elezione.liste) {
+    const datiLista = dati?.liste?.[lista.numero];
+    liste[lista.numero] = { voti: intero(datiLista?.voti) };
+    if (elezione.maxPreferenze > 0) {
+      liste[lista.numero].preferenze = Object.fromEntries(
+        lista.candidati.map((c) => [c.nome, intero(datiLista?.preferenze?.[c.nome])]),
+      );
+    }
+  }
+  return { votanti: intero(dati?.votanti), bianche: intero(dati?.bianche), nulle: intero(dati?.nulle), liste };
+}
+
+/** Come elezioneCanonica, per una sezione intera (stato e tutte le elezioni con dati). */
 export function sezioneCanonica(config, datiSezione) {
   const canonica = { stato: statoSezione(datiSezione) };
   if (!datiSezione?.elezioni) return canonica;
   const elezioni = {};
   for (const elezione of config.elezioni) {
     const dati = datiSezione.elezioni[elezione.id];
-    if (!dati) continue;
-    const liste = {};
-    for (const lista of elezione.liste) {
-      const datiLista = dati.liste?.[lista.numero];
-      liste[lista.numero] = { voti: intero(datiLista?.voti) };
-      if (elezione.maxPreferenze > 0) {
-        liste[lista.numero].preferenze = Object.fromEntries(
-          lista.candidati.map((c) => [c.nome, intero(datiLista?.preferenze?.[c.nome])]),
-        );
-      }
-    }
-    elezioni[elezione.id] = {
-      votanti: intero(dati.votanti),
-      bianche: intero(dati.bianche),
-      nulle: intero(dati.nulle),
-      liste,
-    };
+    if (dati) elezioni[elezione.id] = elezioneCanonica(elezione, dati);
   }
   if (Object.keys(elezioni).length > 0) canonica.elezioni = elezioni;
   return canonica;
 }
 
+/** Schede contate in un'elezione: voti di lista + bianche + nulle. */
+export function schedeContate(elezione, dati) {
+  const c = elezioneCanonica(elezione, dati);
+  return c.bianche + c.nulle + Object.values(c.liste).reduce((somma, l) => somma + l.voti, 0);
+}
+
+/**
+ * Aggiunge (segno +1) o toglie (segno -1) una scheda ai dati di un'elezione,
+ * per il conteggio "scheda per scheda". La scheda è
+ * { tipo: 'lista', lista: 'II', preferenze: ['Nome Cognome'] }, oppure
+ * { tipo: 'bianca' } o { tipo: 'nulla' }. Restituisce dati nuovi in forma
+ * canonica; nessun numero scende sotto zero.
+ */
+export function applicaScheda(elezione, dati, scheda, segno = 1) {
+  const nuovi = elezioneCanonica(elezione, dati);
+  const somma = (n) => Math.max(0, n + segno);
+  if (scheda.tipo === 'bianca') nuovi.bianche = somma(nuovi.bianche);
+  else if (scheda.tipo === 'nulla') nuovi.nulle = somma(nuovi.nulle);
+  else if (scheda.tipo === 'lista' && nuovi.liste[scheda.lista]) {
+    const lista = nuovi.liste[scheda.lista];
+    lista.voti = somma(lista.voti);
+    for (const nome of scheda.preferenze ?? []) {
+      if (lista.preferenze && nome in lista.preferenze) lista.preferenze[nome] = somma(lista.preferenze[nome]);
+    }
+  }
+  return nuovi;
+}
+
 /**
  * Applica le bozze dello scrutatore ai risultati pubblicati e restituisce
- * il nuovo contenuto di data/risultati.json (sezioni nell'ordine della
- * configurazione, orario dell'aggiornamento su ogni sezione modificata).
+ * il nuovo contenuto di data/risultati.json.
+ *
+ * La bozza di una sezione contiene solo ciò che lo scrutatore ha cambiato:
+ * { stato?, elezioni?: { [id elezione]: dati } }. Le elezioni che non
+ * compaiono nella bozza restano come sono nel file: così due telefoni che
+ * contano elezioni diverse dello stesso seggio non si cancellano i numeri.
  */
 export function applicaBozze(config, risultati, bozze, adesso) {
   const base = normalizzaRisultati(risultati);
   const sezioni = { ...base.sezioni };
-  for (const [id, dati] of Object.entries(bozze.sezioni ?? {})) {
-    const { stato, ...resto } = sezioneCanonica(config, dati);
-    sezioni[id] = { stato, aggiornato: adesso, ...resto };
+  for (const [id, modifiche] of Object.entries(bozze.sezioni ?? {})) {
+    const attuale = sezioneCanonica(config, base.sezioni[id]);
+    const nuove = sezioneCanonica(config, { elezioni: modifiche.elezioni }).elezioni ?? {};
+    const unite = { ...attuale.elezioni, ...nuove };
+    const elezioni = Object.fromEntries(config.elezioni.filter((e) => unite[e.id]).map((e) => [e.id, unite[e.id]]));
+    sezioni[id] = {
+      stato: STATI_SEZIONE.includes(modifiche.stato) ? modifiche.stato : attuale.stato,
+      aggiornato: adesso,
+      ...(Object.keys(elezioni).length > 0 ? { elezioni } : {}),
+    };
   }
   const posizione = new Map(config.sezioni.map((s, i) => [s.id, i]));
   const ultimo = config.sezioni.length;
@@ -464,6 +502,26 @@ export function applicaBozze(config, risultati, bozze, adesso) {
       Object.entries(sezioni).sort(([a], [b]) => (posizione.get(a) ?? ultimo) - (posizione.get(b) ?? ultimo)),
     ),
   };
+}
+
+/**
+ * Elezioni della bozza che nel frattempo qualcun altro ha pubblicato da un
+ * altro dispositivo: i numeri nel file non sono più quelli da cui la bozza
+ * era partita ("basi"). Pubblicando si sovrascriverebbe il loro lavoro.
+ */
+export function elezioniInConflitto(config, bozze, attuali) {
+  const conflitti = [];
+  for (const [id, modifiche] of Object.entries(bozze.sezioni ?? {})) {
+    for (const eid of Object.keys(modifiche.elezioni ?? {})) {
+      const elezione = config.elezioni.find((e) => e.id === eid);
+      if (!elezione || !modifiche.basi || !(eid in modifiche.basi)) continue;
+      const base = modifiche.basi[eid];
+      const ora = attuali.sezioni?.[id]?.elezioni?.[eid];
+      const testo = (dati) => (dati ? JSON.stringify(elezioneCanonica(elezione, dati)) : null);
+      if (testo(base) !== testo(ora)) conflitti.push({ sezione: id, elezione: eid });
+    }
+  }
+  return conflitti;
 }
 
 // ---------------------------------------------------------------------------

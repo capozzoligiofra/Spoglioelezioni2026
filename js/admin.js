@@ -14,13 +14,17 @@ import {
   applicaBozze,
   contaSezioni,
   controllaSezione,
+  elezioneCanonica,
+  elezioniInConflitto,
   intero,
   normalizzaRisultati,
   preparaConfigurazione,
   risultatiVuoti,
+  schedeContate,
   sezioneCanonica,
   statoSezione,
 } from './calcoli.js';
+import { creaConteggio } from './conteggio.js';
 import { caricaJSON, modalitaDemo, percorsi } from './dati.js';
 import { annuncia, classeColore, h, icona, riempi, simboloLista } from './dom.js';
 import * as formato from './formato.js';
@@ -29,6 +33,7 @@ import { formattaJSON } from './json.js';
 
 const PERCORSO_RISULTATI = 'data/risultati.json';
 const CHIAVE_IMPOSTAZIONI = 'spoglio:impostazioni';
+const CHIAVE_MODALITA = 'spoglio:modalita';
 const ICONA_STATO = { 'da-scrutinare': 'cerchio', 'in-corso': 'orologio', scrutinata: 'spunta' };
 const STATO_BREVE = { 'da-scrutinare': 'da scrutinare', 'in-corso': 'in corso', scrutinata: 'scrutinata' };
 
@@ -73,16 +78,44 @@ const app = {
   erroreConnessione: null,
   occupato: false,
   attesaSito: null,
+  // Come si inseriscono i voti: 'schede' (scheda per scheda) o 'totali'
+  modalita: 'schede',
+  conteggio: null,
   el: {},
 };
 
+/** Errore lanciato quando un altro dispositivo ha pubblicato la stessa elezione. */
+class ConflittoDati extends Error {
+  constructor(conflitti) {
+    super('conflitto');
+    this.conflitti = conflitti;
+  }
+}
+
 const chiaveBozze = () => (app.demo ? 'spoglio:bozze-demo' : 'spoglio:bozze');
+const chiaveConteggio = () => (app.demo ? 'spoglio:conteggio-demo' : 'spoglio:conteggio');
 const uguali = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 const sezioneDaId = (id) => app.config.sezioni.find((s) => s.id === id);
 const seggioUnico = () => app.config.sezioni.length === 1;
 /** "Sezione 1A", oppure solo il nome se c'è un seggio unico. */
 const nomeSezione = (sezione) => (seggioUnico() ? sezione.nome : `Sezione ${sezione.nome}`);
-const datiSezione = (id) => app.bozze.sezioni[id] ?? app.pubblicati.sezioni[id];
+const elezioneDaId = (id) => app.config.elezioni.find((e) => e.id === id);
+
+/**
+ * Numeri di una sezione come li vede lo scrutatore: quelli pubblicati, con
+ * sopra le modifiche ancora in bozza. La bozza di una sezione contiene solo
+ * ciò che è cambiato: { stato?, elezioni?: { [id]: dati }, basi?: { [id]: dati } },
+ * dove "basi" ricorda da quali numeri pubblicati è partita ogni elezione.
+ */
+function datiSezione(id) {
+  const pubblicata = app.pubblicati.sezioni[id];
+  const bozza = app.bozze.sezioni[id];
+  if (!bozza) return pubblicata;
+  return {
+    stato: bozza.stato ?? statoSezione(pubblicata),
+    elezioni: { ...pubblicata?.elezioni, ...bozza.elezioni },
+  };
+}
 
 avvia();
 
@@ -111,6 +144,7 @@ async function avvia() {
     token: salvate.token || '',
   };
   app.bozze = caricaBozze();
+  app.modalita = memoria.leggi(CHIAVE_MODALITA, 'schede') === 'totali' ? 'totali' : 'schede';
 
   mostraAvvisiConfigurazione(config, avvisi);
   costruisciPagina();
@@ -180,12 +214,39 @@ function salvaBozze() {
   memoria.scrivi(chiaveBozze(), app.bozze);
 }
 
+/** Mette in bozza i numeri di un'elezione, ricordando da quali numeri pubblicati si era partiti. */
+function bozzaElezione(id, eid, dati) {
+  const bozza = (app.bozze.sezioni[id] ??= {});
+  bozza.elezioni ??= {};
+  bozza.basi ??= {};
+  if (!(eid in bozza.elezioni)) bozza.basi[eid] = app.pubblicati.sezioni[id]?.elezioni?.[eid] ?? null;
+  bozza.elezioni[eid] = dati;
+}
+
+/** Toglie dalla bozza di una sezione ciò che è uguale a quanto già pubblicato. */
+function semplificaBozza(id) {
+  const bozza = app.bozze.sezioni[id];
+  if (!bozza) return;
+  if (!sezioneDaId(id)) {
+    delete app.bozze.sezioni[id];
+    return;
+  }
+  const pubblicata = sezioneCanonica(app.config, app.pubblicati.sezioni[id]);
+  if (!STATI_SEZIONE.includes(bozza.stato) || bozza.stato === pubblicata.stato) delete bozza.stato;
+  for (const eid of Object.keys(bozza.elezioni ?? {})) {
+    const elezione = elezioneDaId(eid);
+    if (!elezione || uguali(elezioneCanonica(elezione, bozza.elezioni[eid]), pubblicata.elezioni?.[eid])) {
+      delete bozza.elezioni[eid];
+      if (bozza.basi) delete bozza.basi[eid];
+    }
+  }
+  if (bozza.elezioni && Object.keys(bozza.elezioni).length === 0) delete bozza.elezioni;
+  if (bozza.stato === undefined && !bozza.elezioni) delete app.bozze.sezioni[id];
+}
+
 /** Toglie le bozze uguali a quanto già pubblicato (o di sezioni che non esistono più). */
 function pulisciBozze() {
-  for (const [id, dati] of Object.entries(app.bozze.sezioni)) {
-    const pubblicata = sezioneCanonica(app.config, app.pubblicati.sezioni[id]);
-    if (!sezioneDaId(id) || uguali(sezioneCanonica(app.config, dati), pubblicata)) delete app.bozze.sezioni[id];
-  }
+  for (const id of Object.keys(app.bozze.sezioni)) semplificaBozza(id);
   if (app.bozze.definitivi === app.pubblicati.definitivi) app.bozze.definitivi = undefined;
   if (app.bozze.avviso === app.pubblicati.avviso) app.bozze.avviso = undefined;
   salvaBozze();
@@ -311,9 +372,13 @@ async function scriviSuGitHub(trasforma, messaggioCommit, { ignoraContenuto = fa
 }
 
 function messaggioCommit(bozze) {
-  const parti = Object.entries(bozze.sezioni).map(([id, dati]) => {
+  const parti = Object.entries(bozze.sezioni).map(([id, modifiche]) => {
     const nome = sezioneDaId(id)?.nome ?? id;
-    return `${seggioUnico() ? nome : `sezione ${nome}`} ${STATO_BREVE[statoSezione(dati)]}`;
+    const stato = STATO_BREVE[modifiche.stato ?? statoSezione(app.pubblicati.sezioni[id])];
+    const schede = Object.entries(modifiche.elezioni ?? {})
+      .filter(([eid]) => elezioneDaId(eid))
+      .map(([eid, dati]) => `${elezioneDaId(eid).nome} ${schedeContate(elezioneDaId(eid), dati)} schede`);
+    return `${seggioUnico() ? nome : `sezione ${nome}`} ${stato}${schede.length ? ` (${schede.join(', ')})` : ''}`;
   });
   if (bozze.definitivi !== undefined)
     parti.push(bozze.definitivi ? 'risultati definitivi' : 'risultati di nuovo provvisori');
@@ -324,26 +389,33 @@ function messaggioCommit(bozze) {
     : `Spoglio: ${formato.conteggio(parti.length, 'modifica', 'modifiche')}\n\n${parti.join('\n')}`;
 }
 
-async function pubblica() {
-  if (app.occupato) return;
+/**
+ * Pubblica le bozze su GitHub. Restituisce true se è andata bene, false se
+ * no, null se un'altra pubblicazione era già in corso.
+ * automatica: chiamata dal conteggio scheda per scheda, senza finestre di conferma.
+ * sovrascrivi: pubblica anche se un altro dispositivo ha cambiato la stessa elezione.
+ */
+async function pubblica({ automatica = false, sovrascrivi = false } = {}) {
+  if (app.occupato) return null;
   if (numeroModifiche() === 0) {
-    messaggio('', 'Non ci sono modifiche da pubblicare.');
-    return;
+    if (!automatica) messaggio('', 'Non ci sono modifiche da pubblicare.');
+    return true;
   }
-  const errori = Object.entries(app.bozze.sezioni).flatMap(([id, dati]) =>
-    controllaSezione(app.config, sezioneDaId(id), dati)
+  const errori = Object.keys(app.bozze.sezioni).flatMap((id) =>
+    controllaSezione(app.config, sezioneDaId(id), datiSezione(id))
       .filter((p) => p.livello === 'errore')
       .map((p) => `• ${nomeSezione(sezioneDaId(id))}: ${p.messaggio}`),
   );
   if (
     errori.length > 0 &&
+    !automatica &&
     !window.confirm(
       `Attenzione, ci sono dati impossibili:\n\n${errori.slice(0, 6).join('\n')}${
         errori.length > 6 ? `\n… e altri ${errori.length - 6}` : ''
       }\n\nPubblicare comunque?`,
     )
   ) {
-    return;
+    return false;
   }
 
   const bozze = structuredClone(app.bozze);
@@ -351,46 +423,71 @@ async function pubblica() {
 
   if (app.demo) {
     app.pubblicati = applicaBozze(app.config, app.pubblicati, bozze, adesso);
-    app.bozze = { sezioni: {} };
-    salvaBozze();
+    pulisciBozze();
     disegnaTutto();
     messaggio(
       'ok',
       `Prova riuscita alle ${formato.ora(adesso)}. In modalità dimostrativa i dati non vengono inviati a nessuno.`,
     );
-    return;
+    return true;
   }
   if (!app.repo) {
     messaggio(
       'errore',
-      'Per pubblicare collega prima questo dispositivo a GitHub (riquadro qui sopra), oppure scarica il file.',
+      'Per pubblicare collega prima questo dispositivo a GitHub (riquadro in alto), oppure scarica il file.',
     );
-    trova('titolo-connessione')?.focus();
-    return;
+    if (!automatica) trova('titolo-connessione')?.focus();
+    return false;
   }
 
   app.occupato = true;
   disegnaAzioni();
   messaggio('', 'Pubblicazione in corso…');
+  let riprovaSovrascrivendo = false;
   try {
-    app.pubblicati = await scriviSuGitHub(
-      (attuali) => applicaBozze(app.config, attuali, bozze, adesso),
-      messaggioCommit(bozze),
-    );
-    // Toglie solo le bozze pubblicate: se nel frattempo hai scritto altro, resta in bozza.
-    for (const [id, dati] of Object.entries(bozze.sezioni)) {
-      if (uguali(app.bozze.sezioni[id], dati)) delete app.bozze.sezioni[id];
-    }
-    if (app.bozze.definitivi === bozze.definitivi) app.bozze.definitivi = undefined;
-    if (app.bozze.avviso === bozze.avviso) app.bozze.avviso = undefined;
+    app.pubblicati = await scriviSuGitHub((attuali) => {
+      const conflitti = sovrascrivi ? [] : elezioniInConflitto(app.config, bozze, attuali);
+      if (conflitti.length > 0) throw new ConflittoDati(conflitti);
+      return applicaBozze(app.config, attuali, bozze, adesso);
+    }, messaggioCommit(bozze));
+    // Toglie le bozze ormai pubblicate. Ciò che hai inserito nel frattempo resta in
+    // bozza, e riparte dai numeri appena pubblicati.
     pulisciBozze();
+    for (const [id, bozza] of Object.entries(app.bozze.sezioni)) {
+      for (const eid of Object.keys(bozza.elezioni ?? {})) {
+        bozza.basi = { ...bozza.basi, [eid]: app.pubblicati.sezioni[id]?.elezioni?.[eid] ?? null };
+      }
+    }
+    salvaBozze();
     app.fonte = `Pubblicato su GitHub alle ${formato.ora(adesso)}.`;
     attendiSitoPubblico(adesso, 'Pubblicato');
+    return true;
   } catch (errore) {
-    messaggio('errore', `Pubblicazione non riuscita: ${errore.message} Le modifiche restano salvate come bozza.`);
+    if (errore instanceof ConflittoDati) {
+      const nomi = [...new Set(errore.conflitti.map((c) => elezioneDaId(c.elezione)?.nome ?? c.elezione))].join(' e ');
+      const spiegazione = `Da un altro dispositivo qualcuno ha pubblicato numeri diversi per: ${nomi}. Ogni elezione va contata su un solo telefono.`;
+      if (!automatica) {
+        riprovaSovrascrivendo = window.confirm(
+          `${spiegazione}\n\nSe pubblichi, i tuoi numeri sostituiscono i suoi. Vuoi pubblicare comunque?`,
+        );
+      }
+      if (!riprovaSovrascrivendo) {
+        messaggio(
+          'errore',
+          `Pubblicazione ferma. ${spiegazione} Premi «Pubblica» per decidere se sostituire i suoi numeri con i tuoi.`,
+        );
+      }
+    } else {
+      messaggio(
+        'errore',
+        `Pubblicazione non riuscita: ${errore.message} Le modifiche restano salvate su questo dispositivo.`,
+      );
+    }
+    return riprovaSovrascrivendo ? null : false;
   } finally {
     app.occupato = false;
     disegnaTutto();
+    if (riprovaSovrascrivendo) setTimeout(() => pubblica({ sovrascrivi: true }), 0);
   }
 }
 
@@ -424,6 +521,7 @@ async function azzera() {
   }
   app.bozze = { sezioni: {} };
   salvaBozze();
+  memoria.scrivi(chiaveConteggio(), { ...memoria.leggi(chiaveConteggio(), {}), storico: [] });
   disegnaTutto({ ricostruisciModulo: true });
   if (app.repo) attendiSitoPubblico(adesso, 'Risultati azzerati');
   else if (app.demo) messaggio('ok', 'Tutti i risultati sono stati azzerati.');
@@ -498,18 +596,14 @@ function costruisciPagina() {
 
   app.el.contatore = h('strong', {});
   app.el.messaggio = h('span', { class: 'messaggio-azione', role: 'status' });
-  app.el.pubblica = h('button', { type: 'button', class: 'bottone primario', onclick: pubblica });
+  app.el.pubblica = h('button', { type: 'button', class: 'bottone', onclick: () => pubblica() });
+  app.el.postoConteggio = h('div', { class: 'posto-conteggio' });
   pagina.azioni.firstElementChild.replaceChildren(
-    h('div', { class: 'testi-azione' }, app.el.contatore, app.el.messaggio),
+    app.el.postoConteggio,
     h(
       'div',
-      { class: 'riga-azioni' },
-      h(
-        'button',
-        { type: 'button', class: 'bottone', onclick: () => scaricaFile() },
-        icona('scarica'),
-        'Scarica il file',
-      ),
+      { class: 'riga-pubblica' },
+      h('div', { class: 'testi-azione' }, app.el.contatore, app.el.messaggio),
       app.el.pubblica,
     ),
   );
@@ -522,10 +616,11 @@ function disegnaTutto({ ricostruisciModulo = false } = {}) {
   disegnaGenerale();
   disegnaAzioni();
   if (app.selezionata) {
-    // Il modulo aperto si ricostruisce solo se non contiene modifiche in corso.
+    // La sezione aperta si ricostruisce solo se non contiene modifiche in corso.
     if (ricostruisciModulo && !app.bozze.sezioni[app.selezionata]) apriSezione(app.selezionata, { focus: false });
+    else if (app.conteggio) app.conteggio.aggiorna();
     else aggiornaControlli();
-    app.el.annulla.hidden = !app.bozze.sezioni[app.selezionata];
+    if (app.el.annulla) app.el.annulla.hidden = !app.bozze.sezioni[app.selezionata];
   }
 }
 
@@ -730,6 +825,100 @@ function apriSezione(id, { focus = true } = {}) {
   const sezione = sezioneDaId(id);
   app.selezionata = id;
   window.history.replaceState(null, '', `${window.location.search}#sezione-${encodeURIComponent(id)}`);
+  app.conteggio?.chiudi();
+  app.conteggio = null;
+  app.el.problemi = null;
+  app.el.annulla = null;
+
+  const sceltaModalita = h(
+    'div',
+    { class: 'scelta-modalita', role: 'group', 'aria-label': 'Come inserire i voti' },
+    [
+      ['schede', 'Scheda per scheda'],
+      ['totali', 'Totali'],
+    ].map(([valore, testo]) =>
+      h(
+        'button',
+        {
+          type: 'button',
+          class: 'bottone',
+          'aria-pressed': String(app.modalita === valore),
+          onclick: () => {
+            app.modalita = valore;
+            memoria.scrivi(CHIAVE_MODALITA, valore);
+            apriSezione(id, { focus: false });
+            disegnaAzioni();
+          },
+        },
+        testo,
+      ),
+    ),
+  );
+
+  const testa = h(
+    'div',
+    { class: 'testa-sezione' },
+    h('h2', { id: 'titolo-modulo', tabindex: '-1' }, nomeSezione(sezione)),
+    h(
+      'p',
+      { class: 'sottotitolo' },
+      sezione.aventiDiritto === null
+        ? 'Aventi diritto al voto non indicati.'
+        : `${formato.conteggio(sezione.aventiDiritto, 'avente diritto', 'aventi diritto')} al voto.`,
+    ),
+    sceltaModalita,
+  );
+
+  if (app.modalita === 'schede') {
+    app.conteggio = creaConteggio({
+      config: app.config,
+      sezione,
+      memoria,
+      chiave: chiaveConteggio(),
+      dati: (eid) => datiSezione(id)?.elezioni?.[eid],
+      datiPubblicati: (eid) => app.pubblicati.sezioni[id]?.elezioni?.[eid],
+      salva: (eid, dati) => salvaElezione(id, eid, dati),
+      pubblica,
+      puoPubblicare: () => app.demo || Boolean(app.repo),
+      annuncia: (testo) => annuncia(pagina.annuncio, testo),
+    });
+    app.el.modulo.replaceChildren(
+      testa,
+      app.conteggio.elemento,
+      h(
+        'p',
+        { class: 'nota' },
+        'A fine conteggio apri «Totali», confronta i numeri con il verbale e scegli «Scrutinata».',
+      ),
+    );
+  } else {
+    app.el.modulo.replaceChildren(testa, moduloTotali(sezione));
+    aggiornaControlli();
+  }
+  app.el.postoConteggio.replaceChildren(...(app.conteggio ? [app.conteggio.barra] : []));
+  app.el.modulo.hidden = false;
+  disegnaSezioni();
+  disegnaAzioni();
+  if (focus) {
+    const titolo = trova('titolo-modulo');
+    titolo.focus({ preventScroll: true });
+    titolo.scrollIntoView({ block: 'start' });
+  }
+}
+
+/** Salva in bozza i numeri di un'elezione arrivati dal conteggio scheda per scheda. */
+function salvaElezione(id, eid, dati) {
+  bozzaElezione(id, eid, dati);
+  if (statoSezione(datiSezione(id)) === 'da-scrutinare') app.bozze.sezioni[id].stato = 'in-corso';
+  semplificaBozza(id);
+  salvaBozze();
+  disegnaSezioni();
+  disegnaAzioni();
+}
+
+/** Modulo con i totali di tutte le elezioni della sezione, da scrivere a mano. */
+function moduloTotali(sezione) {
+  const id = sezione.id;
   const dati = datiSezione(id);
   const stato = statoSezione(dati);
   const indice = app.config.sezioni.indexOf(sezione);
@@ -743,7 +932,7 @@ function apriSezione(id, { focus = true } = {}) {
     'Annulla le modifiche non pubblicate',
   );
 
-  const modulo = h(
+  return h(
     'form',
     {
       id: 'modulo-sezione',
@@ -754,18 +943,6 @@ function apriSezione(id, { focus = true } = {}) {
       onchange: aggiornaDaModulo,
       onkeydown: invioPassaAvanti,
     },
-    h(
-      'div',
-      {},
-      h('h2', { id: 'titolo-modulo', tabindex: '-1' }, nomeSezione(sezione)),
-      h(
-        'p',
-        { class: 'sottotitolo' },
-        sezione.aventiDiritto === null
-          ? 'Aventi diritto al voto non indicati.'
-          : `${formato.conteggio(sezione.aventiDiritto, 'avente diritto', 'aventi diritto')} al voto.`,
-      ),
-    ),
     h(
       'fieldset',
       {},
@@ -785,9 +962,7 @@ function apriSezione(id, { focus = true } = {}) {
       h(
         'p',
         { class: 'nota' },
-        seggioUnico()
-          ? 'Con «Scrutinio in corso» i numeri compaiono già sul sito come dati parziali: durante lo spoglio aggiorna i totali ogni tanto (per esempio ogni 30-50 schede) e premi «Pubblica». Quando hai finito di contare scegli «Scrutinata».'
-          : 'Con «Scrutinio in corso» i voti inseriti compaiono già sul sito come dati parziali. Quando hai finito di contare scegli «Scrutinata».',
+        'Con «Scrutinio in corso» i numeri compaiono già sul sito come dati parziali. Quando hai finito di contare scegli «Scrutinata».',
       ),
     ),
     app.config.elezioni.map((elezione) => moduloElezione(elezione, dati?.elezioni?.[elezione.id])),
@@ -814,16 +989,6 @@ function apriSezione(id, { focus = true } = {}) {
       app.el.annulla,
     ),
   );
-
-  app.el.modulo.replaceChildren(modulo);
-  app.el.modulo.hidden = false;
-  aggiornaControlli();
-  disegnaSezioni();
-  if (focus) {
-    const titolo = trova('titolo-modulo');
-    titolo.focus({ preventScroll: true });
-    titolo.scrollIntoView({ block: 'start' });
-  }
 }
 
 function moduloElezione(elezione, dati) {
@@ -898,44 +1063,52 @@ function campoNumero(etichetta, dataset, valore) {
   );
 }
 
-/** Legge il modulo e restituisce i dati della sezione in forma canonica. */
-function leggiModulo(modulo) {
-  const grezzi = { stato: modulo.querySelector('input[name="stato"]:checked')?.value, elezioni: {} };
-  let qualcosaInserito = false;
-  for (const input of modulo.querySelectorAll('input.numero')) {
-    const { elezione, campo, lista, candidato } = input.dataset;
-    if (input.value !== '') qualcosaInserito = true;
-    const datiElezione = (grezzi.elezioni[elezione] ??= { liste: {} });
+/** Legge dal modulo i numeri di un'elezione. vuoto = nessun campo compilato. */
+function leggiElezione(modulo, elezione) {
+  const grezzi = { liste: {} };
+  let vuoto = true;
+  for (const input of modulo.querySelectorAll(`input.numero[data-elezione="${CSS.escape(elezione.id)}"]`)) {
+    const { campo, lista, candidato } = input.dataset;
+    if (input.value !== '') vuoto = false;
     const numero = intero(input.value);
-    if (campo === 'voti') (datiElezione.liste[lista] ??= { preferenze: {} }).voti = numero;
-    else if (campo === 'preferenze') (datiElezione.liste[lista] ??= { preferenze: {} }).preferenze[candidato] = numero;
-    else datiElezione[campo] = numero;
+    if (campo === 'voti') (grezzi.liste[lista] ??= { preferenze: {} }).voti = numero;
+    else if (campo === 'preferenze') (grezzi.liste[lista] ??= { preferenze: {} }).preferenze[candidato] = numero;
+    else grezzi[campo] = numero;
   }
-  if (!qualcosaInserito) delete grezzi.elezioni;
-  return sezioneCanonica(app.config, grezzi);
+  return { dati: elezioneCanonica(elezione, grezzi), vuoto };
 }
 
 function aggiornaDaModulo(evento) {
   const modulo = evento.currentTarget;
   const campo = evento.target;
+  const id = app.selezionata;
   if (campo.matches('input.numero')) {
     const pulito = campo.value.replace(/\D/g, '').slice(0, 5);
     if (pulito !== campo.value) campo.value = pulito;
+    // Solo l'elezione di questo campo finisce in bozza: le altre restano come sono.
+    const elezione = elezioneDaId(campo.dataset.elezione);
+    const { dati, vuoto } = leggiElezione(modulo, elezione);
+    if (vuoto && !app.pubblicati.sezioni[id]?.elezioni?.[elezione.id]) {
+      const bozza = app.bozze.sezioni[id];
+      if (bozza?.elezioni) delete bozza.elezioni[elezione.id];
+      if (bozza?.basi) delete bozza.basi[elezione.id];
+    } else {
+      bozzaElezione(id, elezione.id, dati);
+    }
     // Il primo numero inserito in una sezione da scrutinare la mette "in corso".
     const stato = modulo.querySelector('input[name="stato"]:checked');
     if (pulito !== '' && stato?.value === 'da-scrutinare') {
       modulo.querySelector('input[name="stato"][value="in-corso"]').checked = true;
+      (app.bozze.sezioni[id] ??= {}).stato = 'in-corso';
       annuncia(pagina.annuncio, 'Stato della sezione: scrutinio in corso.');
     }
+  } else if (campo.name === 'stato') {
+    (app.bozze.sezioni[id] ??= {}).stato = campo.value;
   }
-
-  const dati = leggiModulo(modulo);
-  const pubblicata = sezioneCanonica(app.config, app.pubblicati.sezioni[app.selezionata]);
-  if (uguali(dati, pubblicata)) delete app.bozze.sezioni[app.selezionata];
-  else app.bozze.sezioni[app.selezionata] = dati;
+  semplificaBozza(id);
   salvaBozze();
 
-  app.el.annulla.hidden = !app.bozze.sezioni[app.selezionata];
+  app.el.annulla.hidden = !app.bozze.sezioni[id];
   aggiornaControlli();
   disegnaSezioni();
   disegnaAzioni();
@@ -959,11 +1132,10 @@ function annullaSezione() {
   delete app.bozze.sezioni[app.selezionata];
   salvaBozze();
   apriSezione(app.selezionata);
-  disegnaAzioni();
 }
 
 function aggiornaControlli() {
-  if (!app.selezionata || !app.el.problemi) return;
+  if (!app.selezionata || !app.el.problemi || !app.el.problemi.isConnected) return;
   const sezione = sezioneDaId(app.selezionata);
   const dati = datiSezione(app.selezionata);
 
@@ -1068,6 +1240,17 @@ function bloccoGenerale() {
       ),
     ),
     h(
+      'div',
+      { class: 'riga-azioni' },
+      h(
+        'button',
+        { type: 'button', class: 'bottone', onclick: () => scaricaFile() },
+        icona('scarica'),
+        'Scarica il file dei risultati',
+      ),
+      h('span', { class: 'aiuto' }, "Per caricarlo a mano su GitHub se non c'è connessione o manca il token."),
+    ),
+    h(
       'details',
       { class: 'dettagli interni' },
       h('summary', {}, 'Azzera tutti i risultati'),
@@ -1094,8 +1277,10 @@ function disegnaGenerale() {
 
 function disegnaAzioni() {
   const n = numeroModifiche();
-  app.el.contatore.textContent =
-    n === 0 ? 'Tutto pubblicato' : `${formato.conteggio(n, 'modifica', 'modifiche')} da pubblicare`;
+  if (app.conteggio) app.el.contatore.textContent = app.conteggio.testoStato();
+  else
+    app.el.contatore.textContent =
+      n === 0 ? 'Tutto pubblicato' : `${formato.conteggio(n, 'modifica', 'modifiche')} da pubblicare`;
   app.el.pubblica.replaceChildren(
     icona('carica'),
     app.occupato ? 'Pubblicazione…' : app.demo ? 'Pubblica (prova)' : 'Pubblica',

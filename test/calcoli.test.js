@@ -4,13 +4,16 @@ import { readFileSync } from 'node:fs';
 
 import {
   applicaBozze,
+  applicaScheda,
   calcolaElezione,
   controllaConfigurazione,
   controllaSezione,
   dhondt,
+  elezioniInConflitto,
   intero,
   normalizzaRisultati,
   preparaConfigurazione,
+  schedeContate,
   sezioneCanonica,
 } from '../js/calcoli.js';
 import { formattaJSON } from '../js/json.js';
@@ -358,6 +361,76 @@ test('aggiornamento automatico: 10 secondi se non indicato, mai meno di 5', () =
   assert.equal(preparaConfigurazione(base).config.aggiornamentoSecondi, 10);
   assert.equal(preparaConfigurazione({ ...base, aggiornamentoSecondi: 2 }).config.aggiornamentoSecondi, 5);
   assert.equal(preparaConfigurazione({ ...base, aggiornamentoSecondi: 20 }).config.aggiornamentoSecondi, 20);
+});
+
+test('applicaScheda: una scheda alla volta, e si può annullare', () => {
+  const config = configProva({ maxPreferenze: 2 });
+  const elezione = config.elezioni[0];
+  let dati = { votanti: 15 };
+  dati = applicaScheda(elezione, dati, { tipo: 'lista', lista: 'I', preferenze: ['Anna', 'Carla'] });
+  dati = applicaScheda(elezione, dati, { tipo: 'lista', lista: 'I', preferenze: [] });
+  dati = applicaScheda(elezione, dati, { tipo: 'lista', lista: 'II', preferenze: ['Dario'] });
+  dati = applicaScheda(elezione, dati, { tipo: 'bianca' });
+  dati = applicaScheda(elezione, dati, { tipo: 'nulla' });
+  assert.equal(dati.votanti, 15, 'i votanti non cambiano');
+  assert.deepEqual(dati.liste.I, { voti: 2, preferenze: { Anna: 1, Bruno: 0, Carla: 1 } });
+  assert.deepEqual(dati.liste.II, { voti: 1, preferenze: { Dario: 1, Elena: 0 } });
+  assert.equal(dati.bianche, 1);
+  assert.equal(dati.nulle, 1);
+  assert.equal(schedeContate(elezione, dati), 5);
+
+  // Annullare l'ultima scheda la toglie; i numeri non vanno mai sotto zero.
+  dati = applicaScheda(elezione, dati, { tipo: 'lista', lista: 'II', preferenze: ['Dario'] }, -1);
+  assert.deepEqual(dati.liste.II, { voti: 0, preferenze: { Dario: 0, Elena: 0 } });
+  dati = applicaScheda(elezione, dati, { tipo: 'lista', lista: 'II', preferenze: ['Dario'] }, -1);
+  assert.deepEqual(dati.liste.II, { voti: 0, preferenze: { Dario: 0, Elena: 0 } });
+  assert.equal(schedeContate(elezione, dati), 4);
+  assert.deepEqual(controllaSezione(config, config.sezioni[0], { stato: 'in-corso', elezioni: { ci: dati } }), []);
+});
+
+test('applicaBozze: due telefoni che contano elezioni diverse non si cancellano i numeri', () => {
+  const { config } = preparaConfigurazione({
+    sezioni: [{ id: 'seggio' }],
+    elezioni: [
+      {
+        id: 'ci',
+        nome: 'Consiglio',
+        seggi: 1,
+        maxPreferenze: 0,
+        liste: [{ numero: 'I', nome: 'A', candidati: [{ nome: 'X' }] }],
+      },
+      {
+        id: 'cps',
+        nome: 'Consulta',
+        seggi: 1,
+        maxPreferenze: 0,
+        liste: [{ numero: 'I', nome: 'B', candidati: [{ nome: 'Y' }] }],
+      },
+    ],
+  });
+  // Il telefono B ha già pubblicato la Consulta
+  const nelFile = {
+    sezioni: { seggio: { stato: 'in-corso', elezioni: { cps: { votanti: 9, liste: { I: { voti: 7 } } } } } },
+  };
+  // Il telefono A pubblica solo il Consiglio, senza toccare lo stato
+  const bozzaA = { sezioni: { seggio: { elezioni: { ci: { votanti: 9, liste: { I: { voti: 5 } } } } } } };
+  const nuovi = applicaBozze(config, nelFile, bozzaA, '2026-10-17T10:00:00.000Z');
+  assert.equal(nuovi.sezioni.seggio.stato, 'in-corso');
+  assert.equal(nuovi.sezioni.seggio.elezioni.ci.liste.I.voti, 5);
+  assert.equal(nuovi.sezioni.seggio.elezioni.cps.liste.I.voti, 7, 'la Consulta del telefono B resta');
+  assert.deepEqual(Object.keys(nuovi.sezioni.seggio.elezioni), ['ci', 'cps']);
+
+  // Conflitto: qualcun altro ha cambiato proprio l'elezione che sto per pubblicare
+  const bozzaConBase = {
+    sezioni: { seggio: { elezioni: { cps: { liste: { I: { voti: 8 } } } }, basi: { cps: null } } },
+  };
+  assert.deepEqual(elezioniInConflitto(config, bozzaConBase, nelFile), [{ sezione: 'seggio', elezione: 'cps' }]);
+  const bozzaAggiornata = {
+    sezioni: {
+      seggio: { elezioni: { cps: { liste: { I: { voti: 8 } } } }, basi: { cps: nelFile.sezioni.seggio.elezioni.cps } },
+    },
+  };
+  assert.deepEqual(elezioniInConflitto(config, bozzaAggiornata, nelFile), []);
 });
 
 test('formattaJSON: oggetti semplici su una riga e risultato rileggibile', () => {

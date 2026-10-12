@@ -1679,6 +1679,250 @@ section[id],
   min-width: 0;
 }
 
+/* ----------------------------------- Area scrutatori: scheda per scheda */
+
+.testa-sezione {
+  display: grid;
+  gap: 4px;
+  margin-bottom: 16px;
+}
+
+.scelta-modalita {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.scelta-modalita .bottone[aria-pressed='true'] {
+  background: var(--primario);
+  border-color: var(--primario);
+  color: var(--primario-testo);
+}
+
+.conteggio {
+  display: grid;
+  gap: 14px;
+}
+
+.testa-conteggio {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 8px 16px;
+  padding: 12px 14px;
+  border-radius: var(--raggio);
+  background: var(--superficie-2);
+}
+
+.riepilogo-conteggio {
+  font-size: 1.0625rem;
+}
+
+.campo-votanti {
+  width: 7rem;
+}
+
+.griglia-conteggio {
+  display: grid;
+  gap: 12px;
+}
+
+.conteggio-lista {
+  display: grid;
+  gap: 8px;
+  padding: 10px;
+  border: 1px solid var(--bordo);
+  border-left: 5px solid var(--c);
+  border-radius: var(--raggio);
+}
+
+.griglia-candidati {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 8.25rem), 1fr));
+  gap: 8px;
+}
+
+.tasto-lista,
+.tasto-candidato,
+.tasto-speciale {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 56px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 2px solid var(--bordo-forte);
+  background: var(--superficie);
+  color: var(--inchiostro);
+  text-align: left;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.tasto-lista {
+  font-weight: 700;
+}
+
+.tasto-testo {
+  display: grid;
+  flex: 1;
+  min-width: 0;
+}
+
+.tasto-nome {
+  font-weight: 650;
+  overflow-wrap: break-word;
+  line-height: 1.25;
+}
+
+.tasto-dettaglio,
+.conta {
+  color: var(--inchiostro-2);
+  font-size: 0.8125rem;
+  font-weight: 500;
+}
+
+.tasto-dettaglio .conta {
+  font-size: inherit;
+}
+
+.conta {
+  flex: none;
+  font-variant-numeric: tabular-nums;
+}
+
+.tasto-lista .conta {
+  order: 3;
+}
+
+.segno-scelta {
+  display: none;
+  flex: none;
+  width: 1.4em;
+  height: 1.4em;
+  stroke-width: 3;
+}
+
+.tasto-lista[aria-pressed='true'],
+.tasto-candidato[aria-pressed='true'],
+.tasto-speciale[aria-pressed='true'] {
+  border-color: var(--inchiostro);
+  background: var(--superficie-2);
+  box-shadow: inset 0 0 0 2px var(--inchiostro);
+}
+
+[aria-pressed='true'] > .segno-scelta {
+  display: block;
+}
+
+.tasti-speciali {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.tasto-speciale {
+  justify-content: space-between;
+}
+
+.annulla-ultima {
+  justify-content: space-between;
+}
+
+.pubblicazione-automatica {
+  max-width: 28rem;
+}
+
+/* Barra in basso: scheda in corso e conferma */
+
+.posto-conteggio {
+  flex-basis: 100%;
+}
+
+.posto-conteggio:empty {
+  display: none;
+}
+
+.riga-conteggio {
+  display: grid;
+  gap: 8px;
+  padding: 2px 0 8px;
+  border-bottom: 1px solid var(--bordo);
+}
+
+.riga-conteggio .riga-azioni {
+  flex-wrap: nowrap;
+}
+
+.scheda-corrente {
+  font-size: 1rem;
+  min-height: 1.5em;
+}
+
+.tasto-conferma {
+  flex: 1;
+  min-height: 52px;
+  font-size: 1.0625rem;
+}
+
+.riga-conteggio .bottone[aria-disabled='true'] {
+  opacity: 0.45;
+}
+
+.riga-pubblica {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px 16px;
+  width: 100%;
+}
+
+.lampeggia {
+  animation: lampeggia 0.5s ease-out;
+}
+
+@keyframes lampeggia {
+  from {
+    background: var(--ok-sfondo);
+  }
+  to {
+    background: transparent;
+  }
+}
+
+.lampeggia-errore {
+  animation: lampeggia-errore 0.6s ease-out;
+}
+
+@keyframes lampeggia-errore {
+  from {
+    background: var(--critico-sfondo);
+  }
+  to {
+    background: transparent;
+  }
+}
+
+@media (max-width: 480px) {
+  .azioni-fisse {
+    padding-block: 8px;
+  }
+
+  .riga-pubblica .testi-azione {
+    font-size: 0.8125rem;
+  }
+
+  .riga-pubblica .bottone {
+    min-height: 34px;
+    padding: 3px 10px;
+  }
+}
+
 /* ---------------------------------------------- Preferenze utente */
 
 @media (prefers-reduced-motion: reduce) {
