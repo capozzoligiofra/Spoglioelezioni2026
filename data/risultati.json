@@ -1,6 +1,8 @@
 {
-  "aggiornato": null,
+  "aggiornato": "2026-10-12T17:15:09.590Z",
   "definitivi": false,
   "avviso": "",
-  "sezioni": {}
+  "sezioni": {
+    "seggio": { "stato": "in-corso", "aggiornato": "2026-10-12T17:15:09.590Z" }
+  }
 }
