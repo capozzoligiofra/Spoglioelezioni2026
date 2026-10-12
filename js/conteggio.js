@@ -1,10 +1,11 @@
 /**
  * Conteggio "scheda per scheda" dell'area scrutatori, pensato per il telefono.
  *
- * Per ogni scheda letta ad alta voce si tocca la lista (oppure direttamente i
- * candidati con la preferenza: la lista si seleziona da sola), o «Bianca» /
- * «Nulla», e si preme «Conferma». I totali si aggiornano da soli e, se si
- * vuole, vengono pubblicati in automatico ogni tot schede.
+ * Ogni tocco registra subito una scheda: sul candidato (voto alla sua lista +
+ * preferenza), sulla lista (solo voto di lista), su «Bianca» o su «Nulla».
+ * Per una seconda preferenza sulla stessa scheda si preme «+ preferenza» e poi
+ * il secondo nome. I numeri vanno sul sito pubblico in automatico ogni tot
+ * schede, per non fare una pubblicazione a ogni tocco.
  */
 
 import { applicaScheda, elezioneCanonica, intero, schedeContate } from './calcoli.js';
@@ -18,7 +19,8 @@ const PAUSA_MS = 2 * 60_000;
 /** Dopo una pubblicazione automatica non riuscita si riprova dopo questo tempo. */
 const RIPROVA_MS = 30_000;
 
-const vuota = () => ({ tipo: null, lista: null, preferenze: [] });
+/** Un secondo tocco sullo stesso tasto entro questo tempo è un doppio tocco involontario. */
+const DOPPIO_TOCCO_MS = 600;
 
 /** "Lista II · Rossi Mario, Bianchi Anna", "Scheda bianca", "Scheda nulla" */
 export function descriviScheda(scheda) {
@@ -58,10 +60,12 @@ export function creaConteggio({
   const salvate = memoria.leggi(chiave, {});
   const stato = {
     elezione: config.elezioni.some((e) => e.id === salvate.elezione) ? salvate.elezione : config.elezioni[0].id,
-    ogni: OGNI_QUANTE_SCHEDE.includes(salvate.ogni) ? salvate.ogni : 20,
+    ogni: OGNI_QUANTE_SCHEDE.includes(salvate.ogniSchede) ? salvate.ogniSchede : 10,
     storico: Array.isArray(salvate.storico) ? salvate.storico.slice(-200) : [],
-    scheda: vuota(),
-    ultimaConferma: 0,
+    // true dopo «+ preferenza»: il prossimo candidato toccato va sull'ultima scheda
+    aggiungi: false,
+    ultimoTasto: null,
+    ultimoTocco: 0,
     timer: null,
     inVolo: false,
     erroreAlle: 0,
@@ -76,7 +80,7 @@ export function creaConteggio({
       schedeContate(elezione(), dati(stato.elezione)) - schedeContate(elezione(), datiPubblicati(stato.elezione)),
     );
   const persisti = () =>
-    memoria.scrivi(chiave, { elezione: stato.elezione, ogni: stato.ogni, storico: stato.storico.slice(-200) });
+    memoria.scrivi(chiave, { elezione: stato.elezione, ogniSchede: stato.ogni, storico: stato.storico.slice(-200) });
   const ultimaDellElezione = () => {
     for (let i = stato.storico.length - 1; i >= 0; i -= 1) {
       const voce = stato.storico[i];
@@ -88,18 +92,18 @@ export function creaConteggio({
   // ------------------------------------------------------------ Elementi fissi
 
   el.schedaCorrente = h('p', { class: 'scheda-corrente', 'aria-live': 'polite' });
-  el.svuota = h('button', { type: 'button', class: 'bottone', onclick: () => cambiaScheda(vuota()) }, 'Svuota');
-  el.conferma = h(
+  el.annullaUltima = h(
     'button',
-    { type: 'button', class: 'bottone primario tasto-conferma', onclick: conferma },
-    icona('spunta'),
-    'Conferma scheda',
+    { type: 'button', class: 'bottone pericolo', onclick: annullaUltima },
+    icona('sinistra'),
+    'Annulla',
   );
+  el.aggiungi = h('button', { type: 'button', class: 'bottone tasto-aggiungi', onclick: cambiaAggiungi });
   const barra = h(
     'div',
     { class: 'riga-conteggio' },
     el.schedaCorrente,
-    h('div', { class: 'riga-azioni' }, el.svuota, el.conferma),
+    h('div', { class: 'riga-azioni' }, el.annullaUltima, el.aggiungi),
   );
 
   el.schede = h('div', {
@@ -120,13 +124,6 @@ export function creaConteggio({
     oninput: cambiaVotanti,
   });
   el.griglia = h('div', { class: 'griglia-conteggio' });
-  el.annullaUltima = h(
-    'button',
-    { type: 'button', class: 'bottone pericolo', onclick: annullaUltima },
-    icona('sinistra'),
-    "Annulla l'ultima scheda",
-  );
-  el.ultima = h('p', { class: 'nota' });
   el.automatica = h(
     'select',
     { id: 'pubblica-ogni', class: 'input', onchange: cambiaAutomatica },
@@ -155,10 +152,9 @@ export function creaConteggio({
     h(
       'p',
       { class: 'nota' },
-      'Per ogni scheda tocca la lista votata, oppure direttamente i candidati con la preferenza (la lista si seleziona da sola), poi premi «Conferma scheda» in basso.',
+      "Ogni tocco registra subito una scheda: sul candidato (vale anche come voto alla sua lista), sulla lista se non ci sono preferenze, oppure su «Bianca» o «Nulla». Se la scheda ha un'altra preferenza premi «+ preferenza» in basso e poi il secondo nome.",
     ),
     el.griglia,
-    h('div', { class: 'riga-azioni annulla-ultima' }, el.annullaUltima, el.ultima),
     h(
       'div',
       { class: 'campo pubblicazione-automatica' },
@@ -178,7 +174,7 @@ export function creaConteggio({
     el.tasti.clear();
     // Ogni tasto ha un numero (voti o preferenze già contati) che si aggiorna da solo.
     const tasto = (chiaveTasto, classe, onclick, contenuto, conta = h('span', { class: 'conta' })) => {
-      const bottone = h('button', { type: 'button', class: classe, 'aria-pressed': 'false', onclick }, ...contenuto);
+      const bottone = h('button', { type: 'button', class: classe, onclick }, ...contenuto);
       if (!bottone.contains(conta)) bottone.append(conta);
       el.tasti.set(chiaveTasto, { bottone, conta });
       return bottone;
@@ -188,15 +184,19 @@ export function creaConteggio({
         h(
           'section',
           { class: `conteggio-lista ${classeColore(lista.colore)}`, 'aria-label': `Lista ${lista.numero}` },
-          tasto(`lista:${lista.numero}`, 'tasto-lista', () => tocca({ tipo: 'lista', lista: lista.numero }), [
-            simboloLista(lista, 'piccolo'),
-            h(
-              'span',
-              { class: 'tasto-testo' },
-              h('span', { class: 'tasto-nome' }, `Lista ${lista.numero} – ${lista.nome}`),
-            ),
-            icona('spunta', 'segno-scelta'),
-          ]),
+          tasto(
+            `lista:${lista.numero}`,
+            'tasto-lista',
+            () => tocca({ tipo: 'lista', lista: lista.numero }, `lista:${lista.numero}`),
+            [
+              simboloLista(lista, 'piccolo'),
+              h(
+                'span',
+                { class: 'tasto-testo' },
+                h('span', { class: 'tasto-nome' }, `Lista ${lista.numero} – ${lista.nome}`),
+              ),
+            ],
+          ),
           e.maxPreferenze > 0 && lista.candidati.length
             ? h(
                 'div',
@@ -207,7 +207,11 @@ export function creaConteggio({
                   return tasto(
                     `candidato:${lista.numero}:${candidato.nome}`,
                     'tasto-candidato',
-                    () => tocca({ tipo: 'candidato', lista: lista.numero, nome: candidato.nome }),
+                    () =>
+                      tocca(
+                        { tipo: 'candidato', lista: lista.numero, nome: candidato.nome },
+                        `candidato:${lista.numero}:${candidato.nome}`,
+                      ),
                     [
                       h(
                         'span',
@@ -220,7 +224,6 @@ export function creaConteggio({
                           conta,
                         ),
                       ),
-                      icona('spunta', 'segno-scelta'),
                     ],
                     conta,
                   );
@@ -232,13 +235,11 @@ export function creaConteggio({
       h(
         'div',
         { class: 'tasti-speciali' },
-        tasto('bianca', 'tasto-speciale', () => tocca({ tipo: 'bianca' }), [
+        tasto('bianca', 'tasto-speciale', () => tocca({ tipo: 'bianca' }, 'bianca'), [
           h('span', { class: 'tasto-nome' }, 'Bianca'),
-          icona('spunta', 'segno-scelta'),
         ]),
-        tasto('nulla', 'tasto-speciale', () => tocca({ tipo: 'nulla' }), [
+        tasto('nulla', 'tasto-speciale', () => tocca({ tipo: 'nulla' }, 'nulla'), [
           h('span', { class: 'tasto-nome' }, 'Nulla'),
-          icona('spunta', 'segno-scelta'),
         ]),
       ),
     );
@@ -261,14 +262,16 @@ export function creaConteggio({
   function disegna() {
     const e = elezione();
     const n = numeri();
-    const s = stato.scheda;
     const contate = schedeContate(e, n);
+    const ultima = ultimaDellElezione();
+    const voce = ultima < 0 ? null : stato.storico[ultima];
+    if (!puoAggiungere(voce)) stato.aggiungi = false;
 
-    // Numeri sui tasti e tasti scelti per la scheda in corso
+    // Numeri sui tasti
     for (const lista of e.liste) {
       const tastoLista = el.tasti.get(`lista:${lista.numero}`);
       tastoLista.conta.textContent = formato.conteggio(n.liste[lista.numero].voti, 'voto', 'voti');
-      tastoLista.bottone.setAttribute('aria-pressed', String(s.tipo === 'lista' && s.lista === lista.numero));
+      tastoLista.bottone.classList.toggle('in-attesa', stato.aggiungi && voce.scheda.lista === lista.numero);
       for (const candidato of lista.candidati) {
         const tastoCandidato = el.tasti.get(`candidato:${lista.numero}:${candidato.nome}`);
         if (!tastoCandidato) continue;
@@ -277,16 +280,10 @@ export function creaConteggio({
           'pref.',
           'pref.',
         );
-        tastoCandidato.bottone.setAttribute(
-          'aria-pressed',
-          String(s.tipo === 'lista' && s.lista === lista.numero && s.preferenze.includes(candidato.nome)),
-        );
       }
     }
     el.tasti.get('bianca').conta.textContent = formato.numero(n.bianche);
-    el.tasti.get('bianca').bottone.setAttribute('aria-pressed', String(s.tipo === 'bianca'));
     el.tasti.get('nulla').conta.textContent = formato.numero(n.nulle);
-    el.tasti.get('nulla').bottone.setAttribute('aria-pressed', String(s.tipo === 'nulla'));
 
     // Riepilogo e votanti
     el.contate.replaceChildren(
@@ -295,24 +292,37 @@ export function creaConteggio({
     );
     if (document.activeElement !== el.votanti) el.votanti.value = n.votanti ? String(n.votanti) : '';
 
-    // Scheda in corso (nella barra in basso)
-    const prossima = `Scheda n. ${formato.numero(contate + 1)}`;
-    el.schedaCorrente.replaceChildren(
-      h('strong', {}, prossima),
-      s.tipo ? `: ${descriviScheda(s)}` : ': tocca la lista, i candidati, «Bianca» o «Nulla»',
-    );
-    if (s.tipo) el.conferma.removeAttribute('aria-disabled');
-    else el.conferma.setAttribute('aria-disabled', 'true');
-    el.svuota.hidden = !s.tipo;
-
-    // Ultima scheda registrata
-    const ultima = ultimaDellElezione();
-    el.annullaUltima.hidden = ultima < 0;
-    el.ultima.textContent = ultima < 0 ? '' : `Ultima registrata: ${descriviScheda(stato.storico[ultima].scheda)}`;
+    // Barra in basso: ultima scheda registrata, annulla, + preferenza
+    if (stato.aggiungi) {
+      el.schedaCorrente.replaceChildren(
+        h('strong', {}, `Tocca l'altro candidato della Lista ${voce.scheda.lista}`),
+        ` (scheda n. ${formato.numero(contate)})`,
+      );
+    } else if (voce) {
+      el.schedaCorrente.replaceChildren(
+        icona('spunta'),
+        ' ',
+        h('strong', {}, `Scheda n. ${formato.numero(voce.numero ?? contate)}: `),
+        descriviScheda(voce.scheda),
+      );
+    } else {
+      el.schedaCorrente.replaceChildren('Tocca un candidato, una lista, «Bianca» o «Nulla»: ogni tocco è una scheda.');
+    }
+    el.annullaUltima.hidden = !voce || stato.aggiungi;
+    el.aggiungi.hidden = !puoAggiungere(voce);
+    el.aggiungi.replaceChildren(stato.aggiungi ? 'Non aggiungere' : '+ preferenza');
+    el.aggiungi.setAttribute('aria-pressed', String(stato.aggiungi));
 
     // Pubblicazione automatica
     el.automatica.value = String(stato.ogni);
     el.statoAutomatica.textContent = spiegazioneAutomatica();
+  }
+
+  /** Si può aggiungere una preferenza all'ultima scheda? (è di lista e non ha ancora il massimo) */
+  function puoAggiungere(voce) {
+    if (!voce || voce.scheda.tipo !== 'lista') return false;
+    const lista = elezione().liste.find((l) => l.numero === voce.scheda.lista);
+    return Boolean(lista?.candidati.length) && voce.scheda.preferenze.length < elezione().maxPreferenze;
   }
 
   /** Testo breve sullo stato della pubblicazione, per la barra in basso. */
@@ -333,57 +343,82 @@ export function creaConteggio({
 
   // ---------------------------------------------------------------- Azioni
 
-  function cambiaScheda(scheda) {
-    stato.scheda = scheda;
-    disegna();
-  }
+  function tocca(azione, chiaveTasto) {
+    // Doppio tocco involontario sullo stesso tasto: si conta una volta sola.
+    const ora = Date.now();
+    if (chiaveTasto === stato.ultimoTasto && ora - stato.ultimoTocco < DOPPIO_TOCCO_MS) return;
+    stato.ultimoTasto = chiaveTasto;
+    stato.ultimoTocco = ora;
 
-  function tocca(azione) {
-    const s = stato.scheda;
-    const max = elezione().maxPreferenze;
+    if (stato.aggiungi && azione.tipo === 'candidato') {
+      aggiungiPreferenza(azione, chiaveTasto);
+      return;
+    }
+    stato.aggiungi = false;
     if (azione.tipo === 'bianca' || azione.tipo === 'nulla') {
-      cambiaScheda(s.tipo === azione.tipo ? vuota() : { tipo: azione.tipo, lista: null, preferenze: [] });
-    } else if (azione.tipo === 'lista') {
-      cambiaScheda(
-        s.tipo === 'lista' && s.lista === azione.lista
-          ? vuota()
-          : { tipo: 'lista', lista: azione.lista, preferenze: [] },
-      );
-    } else if (s.tipo !== 'lista' || s.lista !== azione.lista) {
-      // Preferenza a un candidato: vale anche come voto alla sua lista.
-      cambiaScheda({ tipo: 'lista', lista: azione.lista, preferenze: [azione.nome] });
-    } else if (s.preferenze.includes(azione.nome)) {
-      cambiaScheda({ ...s, preferenze: s.preferenze.filter((nome) => nome !== azione.nome) });
-    } else if (s.preferenze.length >= max) {
-      navigator.vibrate?.([40, 60, 40]);
-      annuncia(`Al massimo ${formato.conteggio(max, 'preferenza', 'preferenze')} per scheda.`);
-      el.schedaCorrente.classList.remove('lampeggia-errore');
-      void el.schedaCorrente.offsetWidth;
-      el.schedaCorrente.classList.add('lampeggia-errore');
+      registra({ tipo: azione.tipo, lista: null, preferenze: [] }, chiaveTasto);
     } else {
-      cambiaScheda({ ...s, preferenze: [...s.preferenze, azione.nome] });
+      // Una preferenza a un candidato vale anche come voto alla sua lista.
+      registra({ tipo: 'lista', lista: azione.lista, preferenze: azione.nome ? [azione.nome] : [] }, chiaveTasto);
     }
   }
 
-  function conferma() {
-    const scheda = stato.scheda;
-    // Niente scheda scelta, o doppio tocco involontario sul tasto
-    if (!scheda.tipo || Date.now() - stato.ultimaConferma < 400) return;
-    stato.ultimaConferma = Date.now();
+  /** Registra subito una scheda nuova. */
+  function registra(scheda, chiaveTasto) {
     const e = elezione();
     const prima = dati(e.id);
     const numero = schedeContate(e, prima) + 1;
     salva(e.id, applicaScheda(e, prima, scheda, +1));
-    stato.storico.push({ sezione: sezione.id, elezione: e.id, scheda, ora: Date.now() });
-    stato.scheda = vuota();
+    stato.storico.push({ sezione: sezione.id, elezione: e.id, scheda, numero, ora: Date.now() });
+    conferme(chiaveTasto, `Scheda ${numero}: ${descriviScheda(scheda)}.`);
+  }
+
+  /** Aggiunge un'altra preferenza all'ultima scheda registrata. */
+  function aggiungiPreferenza(azione, chiaveTasto) {
+    const voce = stato.storico[ultimaDellElezione()];
+    if (azione.lista !== voce.scheda.lista) {
+      errore(`La preferenza deve essere per un candidato della Lista ${voce.scheda.lista}, come la scheda.`);
+      return;
+    }
+    if (voce.scheda.preferenze.includes(azione.nome)) {
+      errore(`${azione.nome} è già su questa scheda.`);
+      return;
+    }
+    const e = elezione();
+    const nuova = { ...voce.scheda, preferenze: [...voce.scheda.preferenze, azione.nome] };
+    salva(e.id, applicaScheda(e, applicaScheda(e, dati(e.id), voce.scheda, -1), nuova, +1));
+    voce.scheda = nuova;
+    stato.aggiungi = false;
+    conferme(chiaveTasto, `Scheda ${voce.numero ?? ''}: ${descriviScheda(nuova)}.`);
+  }
+
+  /** Dopo ogni scheda: salva, ridisegna, vibra e fa lampeggiare il tasto toccato. */
+  function conferme(chiaveTasto, testo) {
     persisti();
     disegna();
     navigator.vibrate?.(25);
-    barra.classList.remove('lampeggia');
-    void barra.offsetWidth;
-    barra.classList.add('lampeggia');
-    annuncia(`Scheda ${numero} registrata: ${descriviScheda(scheda)}.`);
+    for (const elemento of [el.tasti.get(chiaveTasto)?.bottone, barra]) {
+      if (!elemento) continue;
+      elemento.classList.remove('lampeggia');
+      void elemento.offsetWidth;
+      elemento.classList.add('lampeggia');
+    }
+    annuncia(testo);
     controlla();
+  }
+
+  function errore(testo) {
+    navigator.vibrate?.([40, 60, 40]);
+    annuncia(testo);
+    el.schedaCorrente.textContent = testo;
+    el.schedaCorrente.classList.remove('lampeggia-errore');
+    void el.schedaCorrente.offsetWidth;
+    el.schedaCorrente.classList.add('lampeggia-errore');
+  }
+
+  function cambiaAggiungi() {
+    stato.aggiungi = !stato.aggiungi;
+    disegna();
   }
 
   function annullaUltima() {
@@ -410,7 +445,7 @@ export function creaConteggio({
 
   function cambiaElezione(id) {
     stato.elezione = id;
-    stato.scheda = vuota();
+    stato.aggiungi = false;
     persisti();
     costruisciGriglia();
     disegna();

@@ -1863,10 +1863,30 @@ section[id],
   min-height: 1.5em;
 }
 
-.tasto-conferma {
+.tasto-aggiungi {
   flex: 1;
-  min-height: 52px;
-  font-size: 1.0625rem;
+  min-height: 48px;
+  font-size: 1rem;
+}
+
+.tasto-aggiungi[aria-pressed='true'] {
+  background: var(--primario);
+  border-color: var(--primario);
+  color: var(--primario-testo);
+}
+
+.riga-conteggio .bottone.pericolo {
+  min-height: 48px;
+}
+
+.scheda-corrente .icona {
+  color: var(--ok-testo);
+}
+
+/* Dopo «+ preferenza»: la lista dell'ultima scheda aspetta il secondo nome */
+.tasto-lista.in-attesa {
+  border-color: var(--inchiostro);
+  border-style: dashed;
 }
 
 .riga-conteggio .bottone[aria-disabled='true'] {
