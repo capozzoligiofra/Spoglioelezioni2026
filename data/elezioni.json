@@ -1,47 +1,48 @@
 {
   "esempio": true,
-  "scuola": "Istituto di Istruzione Superiore «Esempio»",
-  "titolo": "Elezioni degli studenti 2026/27",
-  "dataElezioni": "2026-10-22",
+  "scuola": "IIS IPSAR PIRANESI",
+  "titolo": "Elezioni dei Rappresentanti di Istituto e della Consulta Provinciale 2026/27",
+  "dataElezioni": "2026-10-17",
   "repository": "capozzoligiofra/Spoglioelezioni2026",
   "aggiornamentoSecondi": 10,
   "sezioni": [
-    { "id": "seggio", "nome": "Seggio unico", "aventiDiritto": 600 }
+    { "id": "seggio", "nome": "Seggio unico", "aventiDiritto": 1178 }
   ],
   "elezioni": [
     {
       "id": "consiglio-istituto",
       "nome": "Consiglio d'Istituto",
       "descrizione": "Rappresentanti degli studenti nel Consiglio d'Istituto",
-      "seggi": 4,
+      "seggi": 3,
       "maxPreferenze": 2,
       "liste": [
         {
           "numero": "I",
-          "nome": "Studenti al Centro",
+          "nome": "La scuola che vorresti",
           "candidati": [
-            { "nome": "Giulia Bianchi", "classe": "5A" },
-            { "nome": "Marco Esposito", "classe": "4C" },
-            { "nome": "Sofia Romano", "classe": "3B" },
-            { "nome": "Luca Colombo", "classe": "5D" },
-            { "nome": "Aurora Ricci", "classe": "2A" },
-            { "nome": "Matteo Marino", "classe": "4E" },
-            { "nome": "Chiara Greco", "classe": "3D" },
-            { "nome": "Alessandro Bruno", "classe": "1B" }
+            { "nome": "Mazzariello Vincenzo", "classe": "5AEC" },
+            { "nome": "Iannacco Cristina", "classe": "4AEC" }
           ]
         },
         {
           "numero": "II",
-          "nome": "Scuola Aperta",
+          "nome": "Presenti x Ascoltare, Pronti x Agire",
           "candidati": [
-            { "nome": "Martina Gallo", "classe": "5B" },
-            { "nome": "Lorenzo Conti", "classe": "4A" },
-            { "nome": "Francesca De Luca", "classe": "3C" },
-            { "nome": "Davide Mancini", "classe": "5E" },
-            { "nome": "Elena Costa", "classe": "2D" },
-            { "nome": "Tommaso Giordano", "classe": "4B" },
-            { "nome": "Beatrice Rizzo", "classe": "5C" },
-            { "nome": "Riccardo Lombardi", "classe": "4D" }
+            { "nome": "Scariati Giovanni", "classe": "4E" },
+            { "nome": "Paolantonio Gelsomina", "classe": "5F" },
+            { "nome": "Marino Domenico", "classe": "4F" },
+            { "nome": "Prearo Saida", "classe": "4A" }
+          ]
+        },
+        {
+          "numero": "III",
+          "nome": "In Principio c'è l'azione",
+          "candidati": [
+            { "nome": "Ferrigno Andrea", "classe": "5B" },
+            { "nome": "Guarracino Anastasia", "classe": "5A" },
+            { "nome": "Serrapede Christian", "classe": "5L" },
+            { "nome": "Aruta Giulia", "classe": "5H" },
+            { "nome": "Troncone Gianluigi", "classe": "5F"}
           ]
         }
       ]
@@ -55,22 +56,12 @@
       "liste": [
         {
           "numero": "I",
-          "nome": "Consulta Attiva",
+          "nome": "Viva Piranesi",
           "candidati": [
-            { "nome": "Emma Fontana", "classe": "4A" },
-            { "nome": "Nicolò Santoro", "classe": "5B" },
-            { "nome": "Giorgia Mariani", "classe": "3E" },
-            { "nome": "Pietro Rinaldi", "classe": "4C" }
-          ]
-        },
-        {
-          "numero": "II",
-          "nome": "Insieme in Consulta",
-          "candidati": [
-            { "nome": "Anna Ferrara", "classe": "5D" },
-            { "nome": "Samuele Caruso", "classe": "4E" },
-            { "nome": "Sara Galli", "classe": "3B" },
-            { "nome": "Gabriele Barbieri", "classe": "2C" }
+            { "nome": "Capozzoli Giovanni", "classe": "5A" },
+            { "nome": "De Feo Florigi", "classe": "4A" },
+            { "nome": "De Simone Giorgia", "classe": "4G" },
+            { "nome": "Di Filippo Martina", "classe": "5F" }
           ]
         }
       ]
