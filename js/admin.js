@@ -72,6 +72,7 @@ const app = {
   utente: null,
   erroreConnessione: null,
   occupato: false,
+  attesaSito: null,
   el: {},
 };
 
@@ -384,7 +385,7 @@ async function pubblica() {
     if (app.bozze.avviso === bozze.avviso) app.bozze.avviso = undefined;
     pulisciBozze();
     app.fonte = `Pubblicato su GitHub alle ${formato.ora(adesso)}.`;
-    messaggio('ok', `Pubblicato alle ${formato.ora(adesso)}. Il sito pubblico si aggiorna entro un paio di minuti.`);
+    attendiSitoPubblico(adesso, 'Pubblicato');
   } catch (errore) {
     messaggio('errore', `Pubblicazione non riuscita: ${errore.message} Le modifiche restano salvate come bozza.`);
   } finally {
@@ -424,7 +425,41 @@ async function azzera() {
   app.bozze = { sezioni: {} };
   salvaBozze();
   disegnaTutto({ ricostruisciModulo: true });
-  if (app.repo || app.demo) messaggio('ok', 'Tutti i risultati sono stati azzerati.');
+  if (app.repo) attendiSitoPubblico(adesso, 'Risultati azzerati');
+  else if (app.demo) messaggio('ok', 'Tutti i risultati sono stati azzerati.');
+}
+
+/**
+ * Dopo una pubblicazione ricontrolla il sito pubblico finché non mostra i dati
+ * nuovi (di solito 20-40 secondi, il tempo che GitHub impiega a rimetterlo
+ * online), così chi pubblica sa quando tutti li vedono davvero.
+ */
+async function attendiSitoPubblico(aggiornato, cosa) {
+  const turno = Symbol('attesa');
+  app.attesaSito = turno; // una pubblicazione più recente prende il posto di questa attesa
+  const inizio = Date.now();
+  const alle = formato.ora(aggiornato);
+  messaggio('', `${cosa} alle ${alle}. Il sito pubblico si sta aggiornando, di solito ci vuole meno di un minuto…`);
+  while (Date.now() - inizio < 3 * 60_000) {
+    await new Promise((fatto) => setTimeout(fatto, 4000));
+    if (app.attesaSito !== turno) return;
+    try {
+      const online = normalizzaRisultati(await caricaJSON(percorsi(false).risultati, { fresco: true }));
+      if (online.aggiornato && Date.parse(online.aggiornato) >= Date.parse(aggiornato)) {
+        const secondi = Math.round((Date.now() - inizio) / 1000);
+        messaggio('ok', `${cosa} alle ${alle}: ora è visibile sul sito pubblico (ci sono voluti ${secondi} secondi).`);
+        return;
+      }
+    } catch {
+      // Connessione assente per un momento: si riprova al giro successivo.
+    }
+  }
+  if (app.attesaSito === turno) {
+    messaggio(
+      'errore',
+      `${cosa} alle ${alle}, ma dopo 3 minuti il sito pubblico non mostra ancora i dati nuovi: controlla la scheda Actions su GitHub.`,
+    );
+  }
 }
 
 function scaricaFile(contenuto = conBozze()) {

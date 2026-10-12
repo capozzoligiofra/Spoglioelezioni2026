@@ -22,7 +22,7 @@ daltonismo).
  Scrutatori ── area scrutatori ──▶ data/risultati.json nel repository GitHub
                                      (ogni pubblicazione è un commit)
                                                  │
-                                                 ▼  GitHub Pages (circa 1 minuto)
+                                                 ▼  GitHub Pages (circa 20-30 secondi)
                                      Pagina pubblica: rilegge i dati ogni 10 s
 ```
 
@@ -125,8 +125,8 @@ proprio token.
 ### 4. Fai una prova
 
 Prima del giorno delle elezioni apri l'area scrutatori, collegala con il token, inserisci qualche numero finto e
-premi **Pubblica**: entro un paio di minuti deve comparire sulla pagina pubblica. Poi, in fondo all'area
-scrutatori, usa **Azzera tutti i risultati**.
+premi **Pubblica**: in meno di un minuto deve comparire sulla pagina pubblica (l'area scrutatori ti avvisa quando
+i dati sono online e quanto ci hanno messo). Poi, in fondo all'area scrutatori, usa **Azzera tutti i risultati**.
 
 ## Il giorno dello spoglio
 

@@ -452,7 +452,7 @@ function tesseraAvanzamento(r) {
     let dettaglio = 'Lo spoglio non è ancora iniziato';
     if (r.completo) dettaglio = 'Scrutinio concluso';
     else if (r.quotaSchede !== null) dettaglio = `${formato.percentuale(r.quotaSchede)} delle schede`;
-    else if (r.iniziato) dettaglio = 'Spoglio in corso';
+    else if (spoglioAvviato(r)) dettaglio = 'Spoglio in corso';
     return tessera(
       'Schede scrutinate',
       [formato.numero(r.schede), r.votantiTotali ? h('small', {}, ` su ${formato.numero(r.votantiTotali)}`) : null],
@@ -990,7 +990,11 @@ function risultatiPerSezione(r) {
   );
 }
 
+/** Vero se almeno una sezione è in corso o scrutinata, anche prima che arrivino i numeri. */
+const spoglioAvviato = (r) => r.sezioni['in-corso'] + r.sezioni.scrutinata > 0;
+
 function attesa(r) {
+  const avviato = spoglioAvviato(r);
   return h(
     'div',
     { class: 'blocco' },
@@ -998,11 +1002,11 @@ function attesa(r) {
       'div',
       { class: 'vuoto' },
       icona('urna'),
-      h('strong', {}, 'Lo spoglio non è ancora iniziato'),
+      h('strong', {}, avviato ? 'Lo spoglio è iniziato' : 'Lo spoglio non è ancora iniziato'),
       h(
         'p',
         {},
-        `I risultati compariranno qui ${
+        `${avviato ? 'I primi numeri compariranno qui' : 'I risultati compariranno qui'} ${
           r.seggioUnico ? 'man mano che le schede vengono scrutinate' : 'sezione per sezione'
         }, appena gli scrutatori li pubblicano. Non serve ricaricare: la pagina si aggiorna da sola.`,
       ),
