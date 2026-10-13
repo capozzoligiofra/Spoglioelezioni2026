@@ -26,8 +26,8 @@ daltonismo).
                                      Pagina pubblica: rilegge i dati ogni 10 s
 ```
 
-Ogni pubblicazione diventa un commit del repository, quindi resta uno **storico pubblico** di tutte le modifiche
-ai risultati (c'è un collegamento in fondo alla pagina pubblica): chiunque può verificare cosa è cambiato e quando.
+Ogni pubblicazione diventa un commit del repository, quindi su GitHub resta lo storico di tutte le modifiche ai
+risultati (nella cronologia del file `data/risultati.json`).
 
 ## Messa in funzione
 

@@ -28,7 +28,6 @@ const pagina = {
   schede: trova('schede'),
   pannelli: trova('pannelli'),
   annuncio: trova('annuncio'),
-  piede: trova('piede-collegamenti'),
 };
 
 const app = {
@@ -191,16 +190,6 @@ function intestazione() {
     );
   }
   pagina.avvisi.replaceChildren(...fissi, app.avvisoCommissione);
-
-  if (!app.sorgente.demo && /^[\w.-]+\/[\w.-]+$/.test(config.repository ?? '')) {
-    pagina.piede.append(
-      h(
-        'a',
-        { href: `https://github.com/${config.repository}/commits/HEAD/data/risultati.json` },
-        'Storico di ogni modifica ai risultati',
-      ),
-    );
-  }
 }
 
 function avvisoDemo() {
