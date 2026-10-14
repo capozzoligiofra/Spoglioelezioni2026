@@ -13,7 +13,7 @@
       "id": "consiglio-istituto",
       "nome": "Consiglio d'Istituto",
       "descrizione": "Rappresentanti degli studenti nel Consiglio d'Istituto",
-      "seggi": 3,
+      "seggi": 5,
       "maxPreferenze": 2,
       "liste": [
         {
