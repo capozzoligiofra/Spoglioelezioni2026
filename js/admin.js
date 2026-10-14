@@ -367,6 +367,8 @@ async function scriviSuGitHub(trasforma, messaggioCommit, { ignoraContenuto = fa
     } catch (errore) {
       const conflitto = errore instanceof ErroreGitHub && (errore.stato === 409 || errore.stato === 422);
       if (!conflitto || tentativo >= 4) throw errore;
+      // Subito dopo un'altra scrittura GitHub può dare ancora il file vecchio: si aspetta un attimo.
+      await new Promise((fatto) => setTimeout(fatto, 1000 * tentativo));
     }
   }
 }

@@ -18,6 +18,8 @@ export const OGNI_QUANTE_SCHEDE = [10, 20, 50, 0];
 const PAUSA_MS = 2 * 60_000;
 /** Dopo una pubblicazione automatica non riuscita si riprova dopo questo tempo. */
 const RIPROVA_MS = 30_000;
+/** Se è già in corso un'altra pubblicazione (per esempio a mano) si riprova dopo questo tempo. */
+const OCCUPATO_MS = 5_000;
 
 /** Un secondo tocco sullo stesso tasto entro questo tempo è un doppio tocco involontario. */
 const DOPPIO_TOCCO_MS = 600;
@@ -69,16 +71,21 @@ export function creaConteggio({
     timer: null,
     inVolo: false,
     erroreAlle: 0,
+    occupatoAlle: 0,
   };
   const el = { tasti: new Map() };
 
   const elezione = () => config.elezioni.find((e) => e.id === stato.elezione);
   const numeri = () => elezioneCanonica(elezione(), dati(stato.elezione));
+  // Schede ancora da pubblicare, in tutte le elezioni del seggio. Una correzione che non
+  // cambia il numero di schede (annulla, + preferenza, votanti) conta come una scheda.
   const daPubblicare = () =>
-    Math.max(
-      0,
-      schedeContate(elezione(), dati(stato.elezione)) - schedeContate(elezione(), datiPubblicati(stato.elezione)),
-    );
+    config.elezioni.reduce((totale, e) => {
+      const attuali = elezioneCanonica(e, dati(e.id));
+      const pubblicati = elezioneCanonica(e, datiPubblicati(e.id));
+      if (JSON.stringify(attuali) === JSON.stringify(pubblicati)) return totale;
+      return totale + Math.max(1, Math.abs(schedeContate(e, attuali) - schedeContate(e, pubblicati)));
+    }, 0);
   const persisti = () =>
     memoria.scrivi(chiave, { elezione: stato.elezione, ogniSchede: stato.ogni, storico: stato.storico.slice(-200) });
   const ultimaDellElezione = () => {
@@ -441,6 +448,7 @@ export function creaConteggio({
     const e = elezione();
     salva(e.id, { ...elezioneCanonica(e, dati(e.id)), votanti: intero(pulito) });
     disegna();
+    controlla();
   }
 
   function cambiaElezione(id) {
@@ -468,15 +476,23 @@ export function creaConteggio({
     if (n === 0) return;
     let attesa = n >= stato.ogni ? 0 : PAUSA_MS;
     if (Date.now() - stato.erroreAlle < RIPROVA_MS) attesa = RIPROVA_MS;
+    else if (Date.now() - stato.occupatoAlle < OCCUPATO_MS) attesa = OCCUPATO_MS;
     stato.timer = setTimeout(pubblicaInAutomatico, attesa);
   }
 
   async function pubblicaInAutomatico() {
     if (stato.inVolo || daPubblicare() === 0) return;
     stato.inVolo = true;
-    const esito = await pubblica({ automatica: true });
+    let esito = false;
+    try {
+      esito = await pubblica({ automatica: true });
+    } catch {
+      esito = false;
+    }
     stato.inVolo = false;
     if (esito === false) stato.erroreAlle = Date.now();
+    // null: c'era già un'altra pubblicazione in corso, si riprova tra poco
+    if (esito === null) stato.occupatoAlle = Date.now();
     disegna();
     controlla();
   }
