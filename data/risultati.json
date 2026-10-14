@@ -1,6 +1,24 @@
 {
-  "aggiornato": "2026-10-12T17:55:06.248Z",
+  "aggiornato": "2026-10-14T16:33:12.204Z",
   "definitivi": false,
   "avviso": "",
-  "sezioni": {}
+  "sezioni": {
+    "seggio": {
+      "stato": "in-corso",
+      "aggiornato": "2026-10-14T16:33:12.204Z",
+      "elezioni": {
+        "consulta": {
+          "votanti": 0,
+          "bianche": 0,
+          "nulle": 0,
+          "liste": {
+            "I": {
+              "voti": 10,
+              "preferenze": { "Capozzoli Giovanni": 10, "De Feo Florigi": 0, "De Simone Giorgia": 0, "Di Filippo Martina": 0 }
+            }
+          }
+        }
+      }
+    }
+  }
 }
