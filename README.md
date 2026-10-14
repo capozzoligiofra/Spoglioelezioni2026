@@ -189,7 +189,12 @@ Il sito ha valore informativo: fanno fede i verbali della Commissione elettorale
 Sul sito compaiono nomi di studenti, spesso minorenni: prima di pubblicarlo chiedi il via libera alla
 Commissione elettorale o alla dirigenza. Le pagine chiedono ai motori di ricerca di non indicizzarle
 (`noindex`). Se preferite, nei candidati potete scrivere solo nome e iniziale del cognome e lasciare vuota la
-classe. Il sito non usa cookie, non traccia i visitatori e non carica nulla da altri siti.
+classe. Il sito non usa cookie e non traccia i visitatori.
+
+La pagina pubblica conta le visite con [GoatCounter](https://www.goatcounter.com) (pannello su
+`capozzoligio.goatcounter.com`): niente cookie, nessun dato personale, solo totali come pagine viste, tipo di
+dispositivo e sito di provenienza. L'area scrutatori non viene contata. Per toglierlo basta cancellare lo
+script di GoatCounter da `index.html` e i due indirizzi aggiunti nella riga `Content-Security-Policy`.
 
 ## Per chi sviluppa
 

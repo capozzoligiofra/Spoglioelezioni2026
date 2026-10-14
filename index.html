@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta
       http-equiv="Content-Security-Policy"
-      content="default-src 'self'; img-src 'self' data:; style-src 'self'; script-src 'self'; connect-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'"
+      content="default-src 'self'; img-src 'self' data: https://capozzoligio.goatcounter.com; style-src 'self'; script-src 'self' https://gc.zgo.at; connect-src 'self' https://capozzoligio.goatcounter.com; base-uri 'none'; form-action 'none'; object-src 'none'"
     />
     <!-- Niente indicizzazione sui motori di ricerca: sul sito ci sono nomi di studenti -->
     <meta name="robots" content="noindex, nofollow" />
@@ -24,6 +24,12 @@
     <link rel="icon" href="favicon.svg" type="image/svg+xml" />
     <link rel="stylesheet" href="css/stile.css" />
     <script type="module" src="js/pubblico.js"></script>
+    <!-- Statistiche delle visite con GoatCounter: niente cookie, nessun dato personale -->
+    <script
+      data-goatcounter="https://capozzoligio.goatcounter.com/count"
+      async
+      src="https://gc.zgo.at/count.js"
+    ></script>
   </head>
   <body>
     <a class="salta" href="#contenuto">Vai ai risultati</a>
