@@ -34,6 +34,7 @@ import { formattaJSON } from './json.js';
 const PERCORSO_RISULTATI = 'data/risultati.json';
 const CHIAVE_IMPOSTAZIONI = 'spoglio:impostazioni';
 const CHIAVE_MODALITA = 'spoglio:modalita';
+const CHIAVE_ACCESSO = 'spoglio:accesso';
 const ICONA_STATO = { 'da-scrutinare': 'cerchio', 'in-corso': 'orologio', scrutinata: 'spunta' };
 const STATO_BREVE = { 'da-scrutinare': 'da scrutinare', 'in-corso': 'in corso', scrutinata: 'scrutinata' };
 
@@ -137,6 +138,11 @@ async function avvia() {
   pagina.scuola.textContent = [config.scuola, config.titolo].filter(Boolean).join(' · ');
   if (app.demo) trova('collegamento-sito').href = 'index.html?demo';
 
+  // Password simbolica: tiene lontani i curiosi, non è una protezione vera (il file è pubblico).
+  // A pubblicare i dati serve comunque il token di GitHub.
+  const password = config.passwordScrutatori;
+  if (!app.demo && password && memoria.leggi(CHIAVE_ACCESSO, null) !== password) await chiediPassword(password);
+
   const salvate = memoria.leggi(CHIAVE_IMPOSTAZIONI, {});
   app.impostazioni = {
     repository: salvate.repository || repositoryPredefinito(config),
@@ -156,6 +162,47 @@ async function avvia() {
   const daIndirizzo = decodeURIComponent(window.location.hash.replace(/^#sezione-/, ''));
   if (seggioUnico()) apriSezione(config.sezioni[0].id, { focus: false });
   else if (sezioneDaId(daIndirizzo)) apriSezione(daIndirizzo, { focus: false });
+}
+
+/** Mostra la richiesta della password e aspetta quella giusta. Su questo dispositivo poi non la chiede più. */
+function chiediPassword(password) {
+  return new Promise((fatto) => {
+    const errore = h('div', { 'aria-live': 'assertive' });
+    const modulo = h(
+      'form',
+      {
+        class: 'blocco accesso',
+        'aria-labelledby': 'titolo-accesso',
+        onsubmit: (evento) => {
+          evento.preventDefault();
+          const campo = trova('campo-password');
+          if (campo.value.trim() === password) {
+            memoria.scrivi(CHIAVE_ACCESSO, password);
+            pagina.area.replaceChildren();
+            fatto();
+            return;
+          }
+          errore.replaceChildren(avviso('critico', 'errore', h('strong', {}, 'Password sbagliata, riprova.')));
+          campo.select();
+        },
+      },
+      h('h2', { id: 'titolo-accesso' }, 'Area riservata agli scrutatori'),
+      h('p', {}, 'Per entrare scrivi la password che ti ha dato chi organizza lo spoglio.'),
+      campoTesto('Password', 'password', '', 'Su questo dispositivo te la chiede solo la prima volta.', {
+        type: 'password',
+        autocomplete: 'current-password',
+      }),
+      errore,
+      h(
+        'div',
+        { class: 'riga-azioni' },
+        h('button', { type: 'submit', class: 'bottone primario' }, 'Entra'),
+        h('a', { class: 'bottone', href: './' }, 'Torna ai risultati'),
+      ),
+    );
+    pagina.area.replaceChildren(modulo);
+    trova('campo-password').focus();
+  });
 }
 
 /** Sul sito GitHub Pages (utente.github.io/repository) il repository si ricava dall'indirizzo. */

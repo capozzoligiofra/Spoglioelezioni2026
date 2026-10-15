@@ -154,6 +154,8 @@ export function preparaConfigurazione(grezza) {
     aggiornamentoSecondi: Math.max(5, intero(grezza.aggiornamentoSecondi) || 10),
     // Testo dell'avviso quando il sito mostra solo una parte dei seggi della scuola.
     risultatiParziali: haTesto(grezza.risultatiParziali) ? String(grezza.risultatiParziali).trim() : '',
+    // Password simbolica per entrare nell'area scrutatori (vuota = nessuna password).
+    passwordScrutatori: haTesto(grezza.passwordScrutatori) ? String(grezza.passwordScrutatori).trim() : '',
     sezioni: grezza.sezioni.map((sezione) => ({
       id: String(sezione.id),
       nome: haTesto(sezione.nome) ? String(sezione.nome) : String(sezione.id),

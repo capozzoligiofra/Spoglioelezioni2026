@@ -85,16 +85,17 @@ elezione: sostituisci scuola, aventi diritto, liste e candidati con quelli veri 
 }
 ```
 
-| Campo                      | Cosa scrivere                                                                                                 |
-| -------------------------- | ------------------------------------------------------------------------------------------------------------- |
-| `sezioni`                  | Il seggio dove si vota. `aventiDiritto` è il numero di studenti che possono votare (serve per l'affluenza).   |
-| `risultatiParziali`        | Facoltativo. Se il sito mostra solo alcuni dei seggi della scuola, il testo dell'avviso «Risultati parziali». |
-| `elezioni[].id`            | Un nome corto con lettere minuscole e trattini, es. `consiglio-istituto` o `consulta`.                        |
-| `elezioni[].seggi`         | Quanti rappresentanti si eleggono (sulla pagina pubblica sono i «posti»).                                     |
-| `elezioni[].maxPreferenze` | Quante preferenze si possono dare su una scheda (0 se non si danno preferenze).                               |
-| `liste[].numero`           | Il numero romano della lista, nell'ordine di presentazione (`"I"`, `"II"`, …).                                |
-| `liste[].candidati`        | I candidati **nell'ordine in cui compaiono sulla scheda** (conta in caso di parità di preferenze).            |
-| `aggiornamentoSecondi`     | Ogni quanti secondi la pagina pubblica ricontrolla i dati (10 se non indicato, almeno 5).                     |
+| Campo                      | Cosa scrivere                                                                                                                                                       |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `sezioni`                  | Il seggio dove si vota. `aventiDiritto` è il numero di studenti che possono votare (serve per l'affluenza).                                                         |
+| `passwordScrutatori`       | Facoltativo. Password per entrare nell'area scrutatori. È solo simbolica: il file è pubblico, quindi chi lo apre la vede. A proteggere i dati è il token di GitHub. |
+| `risultatiParziali`        | Facoltativo. Se il sito mostra solo alcuni dei seggi della scuola, il testo dell'avviso «Risultati parziali».                                                       |
+| `elezioni[].id`            | Un nome corto con lettere minuscole e trattini, es. `consiglio-istituto` o `consulta`.                                                                              |
+| `elezioni[].seggi`         | Quanti rappresentanti si eleggono (sulla pagina pubblica sono i «posti»).                                                                                           |
+| `elezioni[].maxPreferenze` | Quante preferenze si possono dare su una scheda (0 se non si danno preferenze).                                                                                     |
+| `liste[].numero`           | Il numero romano della lista, nell'ordine di presentazione (`"I"`, `"II"`, …).                                                                                      |
+| `liste[].candidati`        | I candidati **nell'ordine in cui compaiono sulla scheda** (conta in caso di parità di preferenze).                                                                  |
+| `aggiornamentoSecondi`     | Ogni quanti secondi la pagina pubblica ricontrolla i dati (10 se non indicato, almeno 5).                                                                           |
 
 Con un seggio unico il sito mostra l'avanzamento in **schede scrutinate** (per esempio «230 su 471»). Se in futuro
 i seggi fossero più di uno, basta aggiungere una voce in `sezioni` per ognuno: il sito mostrerà anche lo stato di

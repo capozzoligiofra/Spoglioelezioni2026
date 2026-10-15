@@ -2005,3 +2005,12 @@ section[id],
     break-inside: avoid;
   }
 }
+
+/* Richiesta della password dell'area scrutatori */
+.accesso {
+  display: grid;
+  gap: 12px;
+  grid-column: 1 / -1;
+  width: 100%;
+  max-width: 28rem;
+}

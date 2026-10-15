@@ -5,6 +5,7 @@
   "dataElezioni": "2026-10-17",
   "repository": "capozzoligiofra/Spoglioelezioni2026",
   "aggiornamentoSecondi": 10,
+  "passwordScrutatori": "piranesi2026",
   "risultatiParziali": "Il sito mostra solo i voti del seggio del liceo di via Sandro Pertini, uno dei 5 seggi della scuola: i voti degli altri seggi non sono compresi. Gli eletti si conosceranno solo con i risultati di tutti i seggi.",
   "sezioni": [
     { "id": "seggio", "nome": "Liceo – via Sandro Pertini" }
