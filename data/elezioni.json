@@ -5,15 +5,16 @@
   "dataElezioni": "2026-10-17",
   "repository": "capozzoligiofra/Spoglioelezioni2026",
   "aggiornamentoSecondi": 10,
+  "risultatiParziali": "Il sito mostra solo i voti del seggio del liceo di via Sandro Pertini, uno dei 5 seggi della scuola: i voti degli altri seggi non sono compresi. Gli eletti si conosceranno solo con i risultati di tutti i seggi.",
   "sezioni": [
-    { "id": "seggio", "nome": "Seggio unico", "aventiDiritto": 1178 }
+    { "id": "seggio", "nome": "Liceo – via Sandro Pertini" }
   ],
   "elezioni": [
     {
       "id": "consiglio-istituto",
       "nome": "Consiglio d'Istituto",
       "descrizione": "Rappresentanti degli studenti nel Consiglio d'Istituto",
-      "seggi": 5,
+      "seggi": 4,
       "maxPreferenze": 2,
       "liste": [
         {
@@ -50,8 +51,8 @@
     {
       "id": "consulta",
       "nome": "Consulta provinciale",
-      "descrizione": "Rappresentanti nella Consulta provinciale degli studenti",
-      "seggi": 2,
+      "descrizione": "Un rappresentante nella Consulta provinciale degli studenti (l'altro è già in carica)",
+      "seggi": 1,
       "maxPreferenze": 1,
       "liste": [
         {

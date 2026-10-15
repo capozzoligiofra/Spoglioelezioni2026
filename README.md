@@ -85,15 +85,16 @@ elezione: sostituisci scuola, aventi diritto, liste e candidati con quelli veri 
 }
 ```
 
-| Campo                      | Cosa scrivere                                                                                               |
-| -------------------------- | ----------------------------------------------------------------------------------------------------------- |
-| `sezioni`                  | Il seggio dove si vota. `aventiDiritto` è il numero di studenti che possono votare (serve per l'affluenza). |
-| `elezioni[].id`            | Un nome corto con lettere minuscole e trattini, es. `consiglio-istituto` o `consulta`.                      |
-| `elezioni[].seggi`         | Quanti rappresentanti si eleggono.                                                                          |
-| `elezioni[].maxPreferenze` | Quante preferenze si possono dare su una scheda (0 se non si danno preferenze).                             |
-| `liste[].numero`           | Il numero romano della lista, nell'ordine di presentazione (`"I"`, `"II"`, …).                              |
-| `liste[].candidati`        | I candidati **nell'ordine in cui compaiono sulla scheda** (conta in caso di parità di preferenze).          |
-| `aggiornamentoSecondi`     | Ogni quanti secondi la pagina pubblica ricontrolla i dati (10 se non indicato, almeno 5).                   |
+| Campo                      | Cosa scrivere                                                                                                 |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| `sezioni`                  | Il seggio dove si vota. `aventiDiritto` è il numero di studenti che possono votare (serve per l'affluenza).   |
+| `risultatiParziali`        | Facoltativo. Se il sito mostra solo alcuni dei seggi della scuola, il testo dell'avviso «Risultati parziali». |
+| `elezioni[].id`            | Un nome corto con lettere minuscole e trattini, es. `consiglio-istituto` o `consulta`.                        |
+| `elezioni[].seggi`         | Quanti rappresentanti si eleggono (sulla pagina pubblica sono i «posti»).                                     |
+| `elezioni[].maxPreferenze` | Quante preferenze si possono dare su una scheda (0 se non si danno preferenze).                               |
+| `liste[].numero`           | Il numero romano della lista, nell'ordine di presentazione (`"I"`, `"II"`, …).                                |
+| `liste[].candidati`        | I candidati **nell'ordine in cui compaiono sulla scheda** (conta in caso di parità di preferenze).            |
+| `aggiornamentoSecondi`     | Ogni quanti secondi la pagina pubblica ricontrolla i dati (10 se non indicato, almeno 5).                     |
 
 Con un seggio unico il sito mostra l'avanzamento in **schede scrutinate** (per esempio «230 su 471»). Se in futuro
 i seggi fossero più di uno, basta aggiungere una voce in `sezioni` per ognuno: il sito mostrerà anche lo stato di
@@ -174,10 +175,13 @@ fondo all'area scrutatori): poi carichi `risultati.json` nella cartella `data/` 
 ## Come vengono calcolati i risultati
 
 - **Voti validi**: la somma dei voti di lista. Le percentuali delle liste sono calcolate sui voti validi.
-- **Affluenza**: votanti diviso aventi diritto.
-- **Seggi**: metodo D'Hondt. I voti di ogni lista si dividono per 1, 2, 3… e i seggi vanno ai quozienti più alti.
-  A parità di quoziente vince la lista con più voti; se anche i voti sono uguali serve un sorteggio (il sito lo
-  segnala). Una lista non può avere più seggi dei suoi candidati.
+- **Affluenza**: votanti diviso aventi diritto. Se gli aventi diritto non sono indicati, al suo posto si mostrano i
+  votanti.
+- **Posti**: metodo D'Hondt, come prevede l'ordinanza ministeriale. I voti di ogni lista si dividono per 1, 2, 3… e
+  i posti vanno ai quozienti più alti. A parità di quoziente vince la lista con più voti; se anche i voti sono
+  uguali serve un sorteggio (il sito lo segnala). Una lista non può avere più posti dei suoi candidati.
+  Con 4 posti e 2 liste, per esempio, la seconda lista prende 1 posto se supera un quarto dei voti della prima e 2
+  posti se ne supera i due terzi.
 - **Eletti**: in ogni lista, i candidati con più preferenze; a parità, chi viene prima nell'ordine di lista.
 - I dati «in corso» sono già conteggiati come parziali: finché lo spoglio non è finito i seggi sono una
   proiezione.

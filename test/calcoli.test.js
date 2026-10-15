@@ -483,3 +483,29 @@ test('data/demo: dati di esempio coerenti, spoglio completo, tutti i seggi asseg
     }
   }
 });
+
+test("D'Hondt con 4 posti e 2 liste: quando la seconda lista prende 1 o 2 posti", () => {
+  const posti = (b) =>
+    seggiPerLista(
+      dhondt(
+        [
+          { id: 'A', voti: 100 },
+          { id: 'B', voti: b },
+        ],
+        4,
+      ),
+    );
+  assert.deepEqual(posti(25), { A: 4, B: 0 }, 'esattamente un quarto: parità di quoziente, vince chi ha più voti');
+  assert.deepEqual(posti(26), { A: 3, B: 1 });
+  assert.deepEqual(posti(66), { A: 3, B: 1 });
+  assert.deepEqual(posti(67), { A: 2, B: 2 }, 'servono più dei due terzi per il secondo posto');
+  assert.deepEqual(posti(100), { A: 2, B: 2 });
+});
+
+test("risultati parziali: il testo dell'avviso arriva nella configurazione", () => {
+  const base = { sezioni: [{ id: 's' }], elezioni: configProva().elezioni };
+  assert.equal(preparaConfigurazione(base).config.risultatiParziali, '');
+  const { config } = preparaConfigurazione({ ...base, risultatiParziali: '  Solo un seggio su 5. ' });
+  assert.equal(config.risultatiParziali, 'Solo un seggio su 5.');
+  assert.equal(config.sezioni[0].aventiDiritto, null);
+});

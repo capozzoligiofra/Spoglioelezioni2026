@@ -152,6 +152,8 @@ export function preparaConfigurazione(grezza) {
     ...grezza,
     // Ogni quanti secondi la pagina pubblica ricontrolla i risultati (almeno 5).
     aggiornamentoSecondi: Math.max(5, intero(grezza.aggiornamentoSecondi) || 10),
+    // Testo dell'avviso quando il sito mostra solo una parte dei seggi della scuola.
+    risultatiParziali: haTesto(grezza.risultatiParziali) ? String(grezza.risultatiParziali).trim() : '',
     sezioni: grezza.sezioni.map((sezione) => ({
       id: String(sezione.id),
       nome: haTesto(sezione.nome) ? String(sezione.nome) : String(sezione.id),

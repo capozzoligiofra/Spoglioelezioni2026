@@ -189,6 +189,11 @@ function intestazione() {
       ),
     );
   }
+  if (config.risultatiParziali) {
+    fissi.push(
+      avviso('attenzione', 'avviso', h('strong', {}, 'Risultati parziali'), h('p', {}, config.risultatiParziali)),
+    );
+  }
   pagina.avvisi.replaceChildren(...fissi, app.avvisoCommissione);
 }
 
@@ -237,10 +242,19 @@ function disegnaStato() {
   let stato;
   let simbolo;
   let testo;
+  const parziali = Boolean(app.config.risultatiParziali);
   if (risultati.definitivi) {
-    [stato, simbolo, testo] = ['definitivi', icona('lucchetto'), 'Risultati definitivi'];
+    [stato, simbolo, testo] = [
+      'definitivi',
+      icona('lucchetto'),
+      parziali ? 'Spoglio del seggio concluso' : 'Risultati definitivi',
+    ];
   } else if (c.scrutinata === c.totale) {
-    [stato, simbolo, testo] = ['concluso', icona('spunta'), 'Spoglio concluso · risultati provvisori'];
+    [stato, simbolo, testo] = [
+      'concluso',
+      icona('spunta'),
+      parziali ? 'Spoglio del seggio concluso' : 'Spoglio concluso · risultati provvisori',
+    ];
   } else if (c.scrutinata + c['in-corso'] > 0) {
     [stato, simbolo, testo] = [
       'in-corso',
@@ -410,7 +424,14 @@ function pannello(r) {
     numeriPrincipali(r),
     r.seggioUnico ? null : statoSezioni(r),
     r.iniziato
-      ? [votiDiLista(r), seggi(r), preferenze(r), spiegazioneSeggi(r), r.seggioUnico ? null : risultatiPerSezione(r)]
+      ? [
+          // Con una lista sola contano solo le preferenze: niente voti di lista né calcolo dei posti.
+          r.liste.length > 1 ? votiDiLista(r) : null,
+          seggi(r),
+          preferenze(r),
+          r.liste.length > 1 ? spiegazioneSeggi(r) : null,
+          r.seggioUnico ? null : risultatiPerSezione(r),
+        ]
       : [attesa(r), listeECandidati(elezione)],
   );
 }
@@ -418,10 +439,12 @@ function pannello(r) {
 function descrizioneElezione(elezione) {
   return [
     elezione.descrizione,
-    `${formato.conteggio(elezione.seggi, 'seggio', 'seggi')} da assegnare`,
+    `${formato.conteggio(elezione.seggi, 'posto', 'posti')} da assegnare`,
     elezione.maxPreferenze === 0
       ? 'senza preferenze'
-      : `fino a ${formato.conteggio(elezione.maxPreferenze, 'preferenza', 'preferenze')} per scheda`,
+      : elezione.maxPreferenze === 1
+        ? 'una sola preferenza per scheda'
+        : `fino a ${formato.conteggio(elezione.maxPreferenze, 'preferenza', 'preferenze')} per scheda`,
   ]
     .filter(Boolean)
     .join(' · ');
@@ -468,16 +491,26 @@ function numeriPrincipali(r) {
     'div',
     { class: 'kpi' },
     tesseraAvanzamento(r),
-    tessera(
-      'Affluenza',
-      formato.percentuale(r.affluenza),
-      null,
-      r.affluenza === null
-        ? `Disponibile ${r.seggioUnico ? "all'inizio dello spoglio" : 'dopo le prime sezioni'}`
-        : `${formato.numero(r.votanti)} votanti su ${formato.numero(r.aventiDirittoConDati)} aventi diritto${
-            parziale ? ' nelle sezioni contate' : ''
-          }`,
-    ),
+    // Senza il numero degli aventi diritto l'affluenza non si può calcolare: si mostrano i votanti.
+    app.config.sezioni.every((s) => s.aventiDiritto === null)
+      ? tessera(
+          'Votanti',
+          r.votantiTotali ? formato.numero(r.votantiTotali) : '—',
+          null,
+          r.votantiTotali
+            ? `dal registro ${r.seggioUnico ? 'del seggio' : 'delle sezioni'}`
+            : "Disponibile all'inizio dello spoglio",
+        )
+      : tessera(
+          'Affluenza',
+          formato.percentuale(r.affluenza),
+          null,
+          r.affluenza === null
+            ? `Disponibile ${r.seggioUnico ? "all'inizio dello spoglio" : 'dopo le prime sezioni'}`
+            : `${formato.numero(r.votanti)} votanti su ${formato.numero(r.aventiDirittoConDati)} aventi diritto${
+                parziale ? ' nelle sezioni contate' : ''
+              }`,
+        ),
     tessera(
       'Voti validi',
       formato.numero(r.validi),
@@ -588,7 +621,7 @@ function votiDiLista(r) {
             h(
               'span',
               { class: 'rl-sotto' },
-              `Lista ${lista.numero} · ${lista.seggi ? formato.conteggio(lista.seggi, 'seggio', 'seggi') : 'nessun seggio'}`,
+              `Lista ${lista.numero} · ${lista.seggi ? formato.conteggio(lista.seggi, 'posto', 'posti') : 'nessun posto'}`,
             ),
           ),
           h(
@@ -612,9 +645,14 @@ function elencoListe(liste) {
 function seggi(r) {
   const id = `seggi-${r.elezione.id}`;
   const { assegnati, nonAssegnati, sorteggio } = r.seggi;
-  let titolo = 'Seggi: proiezione';
-  let nota = 'Come verrebbero assegnati i seggi con i voti contati finora: può cambiare fino alla fine dello spoglio.';
-  if (r.definitivi) {
+  const parziali = app.config.risultatiParziali;
+  let titolo = 'Posti: proiezione';
+  let nota = 'Come verrebbero assegnati i posti con i voti contati finora: può cambiare fino alla fine dello spoglio.';
+  if (parziali) {
+    titolo = 'Posti: proiezione su questo seggio';
+    nota =
+      'Come verrebbero assegnati i posti con i soli voti di questo seggio. Gli eletti si conosceranno solo con i voti di tutti i seggi della scuola.';
+  } else if (r.definitivi) {
     titolo = 'Eletti';
     nota = 'Risultato proclamato dalla Commissione elettorale.';
   } else if (r.completo) {
@@ -628,7 +666,7 @@ function seggi(r) {
     h(
       'p',
       { class: 'sottotitolo' },
-      assegnati.length ? nota : 'I seggi compariranno appena saranno contati i primi voti di lista.',
+      assegnati.length ? nota : 'I posti compariranno appena saranno contati i primi voti di lista.',
     ),
     h(
       'ol',
@@ -641,7 +679,7 @@ function seggi(r) {
           h(
             'div',
             { class: 'seggio-testo' },
-            h('span', { class: 'seggio-numero' }, `${seggio.numero}° seggio`),
+            h('span', { class: 'seggio-numero' }, `${seggio.numero}° posto`),
             h('span', { class: 'seggio-nome' }, seggio.candidato.nome),
             h(
               'span',
@@ -671,7 +709,7 @@ function seggi(r) {
           h(
             'p',
             {},
-            `${formato.conteggio(nonAssegnati, 'seggio resta', 'seggi restano')} senza assegnazione: le liste non hanno abbastanza candidati.`,
+            `${formato.conteggio(nonAssegnati, 'posto resta', 'posti restano')} senza assegnazione: le liste non hanno abbastanza candidati.`,
           ),
         )
       : null,
@@ -684,7 +722,7 @@ function seggi(r) {
             'p',
             {},
             `${elencoListe(sorteggio.liste)} hanno lo stesso quoziente e gli stessi voti: ${
-              sorteggio.seggi === 1 ? "l'ultimo seggio si assegna" : `gli ultimi ${sorteggio.seggi} seggi si assegnano`
+              sorteggio.seggi === 1 ? "l'ultimo posto si assegna" : `gli ultimi ${sorteggio.seggi} posti si assegnano`
             } per sorteggio. Per ora ${sorteggio.seggi === 1 ? 'è mostrato' : 'sono mostrati'} alla lista che viene prima sulla scheda.`,
           ),
         )
@@ -703,7 +741,9 @@ function preferenze(r) {
     h(
       'p',
       { class: 'sottotitolo' },
-      `Ogni scheda può dare fino a ${formato.conteggio(maxPreferenze, 'preferenza', 'preferenze')} a candidati della lista votata. In ogni lista sono eletti i candidati con più preferenze; a parità, chi viene prima nell'ordine di lista.`,
+      r.liste.length === 1
+        ? `Ogni scheda può dare ${maxPreferenze === 1 ? 'una sola preferenza' : `fino a ${formato.conteggio(maxPreferenze, 'preferenza', 'preferenze')}`}. ${r.elezione.seggi === 1 ? 'È eletto il candidato' : `Sono eletti i ${formato.numero(r.elezione.seggi)} candidati`} con più preferenze; a parità, chi viene prima nell'ordine di lista.`
+        : `Ogni scheda può dare fino a ${formato.conteggio(maxPreferenze, 'preferenza', 'preferenze')} a candidati della lista votata. In ogni lista sono eletti i candidati con più preferenze; a parità, chi viene prima nell'ordine di lista.`,
     ),
     h(
       'div',
@@ -772,7 +812,7 @@ function tabellaPreferenze(r, lista) {
       ? h(
           'p',
           { class: 'nota' },
-          "Parità di preferenze per l'ultimo seggio della lista: prevale chi viene prima nell'ordine di lista.",
+          "Parità di preferenze per l'ultimo posto della lista: prevale chi viene prima nell'ordine di lista.",
         )
       : null,
   );
@@ -785,21 +825,21 @@ function spiegazioneSeggi(r) {
   return h(
     'details',
     { class: 'dettagli', dataset: { chiave: `quozienti-${elezione.id}` } },
-    h('summary', { id: `apri-quozienti-${elezione.id}` }, 'Come vengono assegnati i seggi'),
+    h('summary', { id: `apri-quozienti-${elezione.id}` }, 'Come vengono assegnati i posti'),
     h(
       'div',
       { class: 'dettagli-corpo' },
       h(
         'p',
         {},
-        `I seggi si assegnano con il metodo D'Hondt: i voti di ogni lista si dividono per 1, 2, 3 e così via, e i ${formato.numero(
+        `I posti si assegnano con il metodo D'Hondt (come prevede l'ordinanza ministeriale): i voti di ogni lista si dividono per 1, 2, 3 e così via, e i ${formato.numero(
           elezione.seggi,
-        )} seggi vanno ai quozienti più alti. Nella tabella il riquadro scuro indica l'ordine in cui è stato assegnato ogni seggio.`,
+        )} posti vanno ai quozienti più alti. Nella tabella il riquadro scuro indica l'ordine in cui è stato assegnato ogni posto.`,
       ),
       h(
         'p',
         {},
-        'A parità di quoziente il seggio va alla lista con più voti; se anche i voti sono uguali si procede per sorteggio. Una lista non può avere più seggi dei suoi candidati: in quel caso il seggio passa al quoziente successivo.',
+        'A parità di quoziente il posto va alla lista con più voti; se anche i voti sono uguali si procede per sorteggio. Una lista non può avere più posti dei suoi candidati: in quel caso il posto passa al quoziente successivo.',
       ),
       h(
         'div',
@@ -859,7 +899,7 @@ function cellaQuoziente(q) {
       'td',
       { class: 'num vincente' },
       h('span', { class: 'numero-seggio' }, `${q.seggio}°`),
-      h('span', { class: 'sr-only' }, ' seggio: '),
+      h('span', { class: 'sr-only' }, ' posto: '),
       valore,
     );
   }
