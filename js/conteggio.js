@@ -1,11 +1,12 @@
 /**
  * Conteggio "scheda per scheda" dell'area scrutatori, pensato per il telefono.
  *
- * Ogni tocco registra subito una scheda: sul candidato (voto alla sua lista +
- * preferenza), sulla lista (solo voto di lista), su «Bianca» o su «Nulla».
- * Per una seconda preferenza sulla stessa scheda si preme «+ preferenza» e poi
- * il secondo nome. I numeri vanno sul sito pubblico in automatico ogni tot
- * schede, per non fare una pubblicazione a ogni tocco.
+ * Un tocco sulla lista (solo voto di lista), su «Bianca» o su «Nulla» registra
+ * subito una scheda. Dove si danno 2 preferenze, il tocco su un candidato apre
+ * la scheda e il secondo nome la registra: se la scheda ha un solo nome si
+ * preme «Solo 1 preferenza». (Si può anche scegliere di registrare subito al
+ * primo nome e aggiungere l'altro con «+ preferenza».) I numeri vanno sul sito
+ * pubblico in automatico ogni tot schede, per non pubblicare a ogni tocco.
  */
 
 import { applicaScheda, elezioneCanonica, intero, schedeContate } from './calcoli.js';
@@ -34,6 +35,16 @@ export function descriviScheda(scheda) {
   return '';
 }
 
+/** La scheda in corso salvata, se è ancora valida per questa elezione. */
+function schedaInCorsoValida(elezione, salvata) {
+  const lista = elezione.liste.find((l) => l.numero === salvata?.lista);
+  if (!lista || !Array.isArray(salvata.preferenze)) return null;
+  const preferenze = salvata.preferenze.filter((nome) => lista.candidati.some((c) => c.nome === nome));
+  return preferenze.length > 0 && preferenze.length < elezione.maxPreferenze
+    ? { lista: lista.numero, preferenze }
+    : null;
+}
+
 /**
  * @param {object} opzioni
  * @param {object} opzioni.config configurazione delle elezioni
@@ -60,9 +71,14 @@ export function creaConteggio({
   annuncia,
 }) {
   const salvate = memoria.leggi(chiave, {});
+  const elezioneSalvata = config.elezioni.find((e) => e.id === salvate.elezione) ?? config.elezioni[0];
   const stato = {
-    elezione: config.elezioni.some((e) => e.id === salvate.elezione) ? salvate.elezione : config.elezioni[0].id,
+    elezione: elezioneSalvata.id,
     ogni: OGNI_QUANTE_SCHEDE.includes(salvate.ogniSchede) ? salvate.ogniSchede : 10,
+    // true (predefinito): con 2 preferenze la scheda si registra al secondo nome
+    aspetta: salvate.aspettaSecondo !== false,
+    // Scheda aperta dal primo nome e non ancora registrata: { lista, preferenze }
+    inCorso: schedaInCorsoValida(elezioneSalvata, salvate.inCorso),
     storico: Array.isArray(salvate.storico) ? salvate.storico.slice(-200) : [],
     // true dopo «+ preferenza»: il prossimo candidato toccato va sull'ultima scheda
     aggiungi: false,
@@ -87,7 +103,18 @@ export function creaConteggio({
       return totale + Math.max(1, Math.abs(schedeContate(e, attuali) - schedeContate(e, pubblicati)));
     }, 0);
   const persisti = () =>
-    memoria.scrivi(chiave, { elezione: stato.elezione, ogniSchede: stato.ogni, storico: stato.storico.slice(-200) });
+    memoria.scrivi(chiave, {
+      elezione: stato.elezione,
+      ogniSchede: stato.ogni,
+      aspettaSecondo: stato.aspetta,
+      inCorso: stato.inCorso,
+      storico: stato.storico.slice(-200),
+    });
+  /** Con questa elezione e questa lista la scheda aspetta il secondo nome? */
+  const aspettaSecondo = (lista) =>
+    stato.aspetta &&
+    elezione().maxPreferenze >= 2 &&
+    (elezione().liste.find((l) => l.numero === lista)?.candidati.length ?? 0) >= 2;
   const ultimaDellElezione = () => {
     for (let i = stato.storico.length - 1; i >= 0; i -= 1) {
       const voce = stato.storico[i];
@@ -106,11 +133,16 @@ export function creaConteggio({
     'Annulla',
   );
   el.aggiungi = h('button', { type: 'button', class: 'bottone tasto-aggiungi', onclick: cambiaAggiungi });
+  el.soloUna = h(
+    'button',
+    { type: 'button', class: 'bottone primario tasto-solo-una', onclick: registraInCorso },
+    'Solo 1 preferenza',
+  );
   const barra = h(
     'div',
     { class: 'riga-conteggio' },
     el.schedaCorrente,
-    h('div', { class: 'riga-azioni' }, el.annullaUltima, el.aggiungi),
+    h('div', { class: 'riga-azioni' }, el.annullaUltima, el.aggiungi, el.soloUna),
   );
 
   el.schede = h('div', {
@@ -139,6 +171,7 @@ export function creaConteggio({
     ),
   );
   el.statoAutomatica = h('p', { class: 'nota' });
+  el.aspetta = h('input', { id: 'aspetta-secondo', type: 'checkbox', onchange: cambiaAspetta });
 
   const elemento = h(
     'div',
@@ -156,11 +189,7 @@ export function creaConteggio({
         h('span', { class: 'aiuto', id: 'votanti-conteggio-aiuto' }, 'Dal registro'),
       ),
     ),
-    h(
-      'p',
-      { class: 'nota' },
-      "Ogni tocco registra subito una scheda: sul candidato (vale anche come voto alla sua lista), sulla lista se non ci sono preferenze, oppure su «Bianca» o «Nulla». Se la scheda ha un'altra preferenza premi «+ preferenza» in basso e poi il secondo nome.",
-    ),
+    (el.spiegazione = h('p', { class: 'nota' })),
     el.griglia,
     h(
       'div',
@@ -169,6 +198,18 @@ export function creaConteggio({
       el.automatica,
       el.statoAutomatica,
     ),
+    config.elezioni.some((e) => e.maxPreferenze >= 2)
+      ? h(
+          'div',
+          { class: 'casella aspetta-secondo' },
+          el.aspetta,
+          h(
+            'label',
+            { for: 'aspetta-secondo' },
+            'Con 2 preferenze aspetta il secondo nome prima di registrare la scheda',
+          ),
+        )
+      : null,
   );
 
   costruisciGriglia();
@@ -273,15 +314,21 @@ export function creaConteggio({
     const ultima = ultimaDellElezione();
     const voce = ultima < 0 ? null : stato.storico[ultima];
     if (!puoAggiungere(voce)) stato.aggiungi = false;
+    const inCorso = stato.inCorso;
 
     // Numeri sui tasti
     for (const lista of e.liste) {
       const tastoLista = el.tasti.get(`lista:${lista.numero}`);
       tastoLista.conta.textContent = formato.conteggio(n.liste[lista.numero].voti, 'voto', 'voti');
-      tastoLista.bottone.classList.toggle('in-attesa', stato.aggiungi && voce.scheda.lista === lista.numero);
+      tastoLista.bottone.classList.toggle(
+        'in-attesa',
+        (stato.aggiungi && voce.scheda.lista === lista.numero) || inCorso?.lista === lista.numero,
+      );
       for (const candidato of lista.candidati) {
         const tastoCandidato = el.tasti.get(`candidato:${lista.numero}:${candidato.nome}`);
         if (!tastoCandidato) continue;
+        const scelto = inCorso?.lista === lista.numero && inCorso.preferenze.includes(candidato.nome);
+        tastoCandidato.bottone.setAttribute('aria-pressed', String(scelto));
         tastoCandidato.conta.textContent = formato.conteggio(
           n.liste[lista.numero].preferenze[candidato.nome],
           'pref.',
@@ -299,8 +346,24 @@ export function creaConteggio({
     );
     if (document.activeElement !== el.votanti) el.votanti.value = n.votanti ? String(n.votanti) : '';
 
-    // Barra in basso: ultima scheda registrata, annulla, + preferenza
-    if (stato.aggiungi) {
+    // Spiegazione sopra i tasti
+    el.spiegazione.textContent =
+      e.maxPreferenze >= 2 && stato.aspetta
+        ? 'Tocca i due nomi votati: la scheda si registra al secondo. Se la scheda ha un solo nome premi «Solo 1 preferenza» in basso. La lista (senza nomi), «Bianca» e «Nulla» registrano subito.'
+        : e.maxPreferenze >= 2
+          ? "Ogni tocco registra subito una scheda: sul candidato (vale anche come voto alla sua lista), sulla lista se non ci sono preferenze, oppure su «Bianca» o «Nulla». Se la scheda ha un'altra preferenza premi «+ preferenza» in basso e poi il secondo nome."
+          : 'Ogni tocco registra subito una scheda: sul candidato (vale anche come voto alla sua lista), sulla lista se non ci sono preferenze, oppure su «Bianca» o «Nulla».';
+    el.aspetta.checked = stato.aspetta;
+
+    // Barra in basso: scheda in corso o ultima scheda registrata, annulla, + preferenza
+    if (inCorso) {
+      el.schedaCorrente.replaceChildren(
+        h('strong', {}, `Scheda n. ${formato.numero(contate + 1)}: `),
+        descriviScheda({ tipo: 'lista', ...inCorso }),
+        h('br'),
+        `Tocca il secondo nome della Lista ${inCorso.lista}, oppure «Solo 1 preferenza».`,
+      );
+    } else if (stato.aggiungi) {
       el.schedaCorrente.replaceChildren(
         h('strong', {}, `Tocca l'altro candidato della Lista ${voce.scheda.lista}`),
         ` (scheda n. ${formato.numero(contate)})`,
@@ -315,8 +378,9 @@ export function creaConteggio({
     } else {
       el.schedaCorrente.replaceChildren('Tocca un candidato, una lista, «Bianca» o «Nulla»: ogni tocco è una scheda.');
     }
-    el.annullaUltima.hidden = !voce || stato.aggiungi;
-    el.aggiungi.hidden = !puoAggiungere(voce);
+    el.annullaUltima.hidden = !inCorso && (!voce || stato.aggiungi);
+    el.aggiungi.hidden = Boolean(inCorso) || !puoAggiungere(voce);
+    el.soloUna.hidden = !inCorso;
     el.aggiungi.replaceChildren(stato.aggiungi ? 'Non aggiungere' : '+ preferenza');
     el.aggiungi.setAttribute('aria-pressed', String(stato.aggiungi));
 
@@ -357,6 +421,11 @@ export function creaConteggio({
     stato.ultimoTasto = chiaveTasto;
     stato.ultimoTocco = ora;
 
+    if (stato.inCorso) {
+      if (azione.tipo === 'candidato') completaInCorso(azione, chiaveTasto);
+      else errore('Prima completa la scheda in corso: tocca il secondo nome oppure «Solo 1 preferenza».');
+      return;
+    }
     if (stato.aggiungi && azione.tipo === 'candidato') {
       aggiungiPreferenza(azione, chiaveTasto);
       return;
@@ -364,6 +433,13 @@ export function creaConteggio({
     stato.aggiungi = false;
     if (azione.tipo === 'bianca' || azione.tipo === 'nulla') {
       registra({ tipo: azione.tipo, lista: null, preferenze: [] }, chiaveTasto);
+    } else if (azione.tipo === 'candidato' && aspettaSecondo(azione.lista)) {
+      // Primo nome: la scheda resta aperta finché non arriva il secondo.
+      stato.inCorso = { lista: azione.lista, preferenze: [azione.nome] };
+      persisti();
+      disegna();
+      lampeggia(chiaveTasto);
+      annuncia(`${azione.nome}: tocca il secondo nome oppure «Solo 1 preferenza».`);
     } else {
       // Una preferenza a un candidato vale anche come voto alla sua lista.
       registra({ tipo: 'lista', lista: azione.lista, preferenze: azione.nome ? [azione.nome] : [] }, chiaveTasto);
@@ -378,6 +454,34 @@ export function creaConteggio({
     salva(e.id, applicaScheda(e, prima, scheda, +1));
     stato.storico.push({ sezione: sezione.id, elezione: e.id, scheda, numero, ora: Date.now() });
     conferme(chiaveTasto, `Scheda ${numero}: ${descriviScheda(scheda)}.`);
+  }
+
+  /** Secondo nome sulla scheda in corso: se arriva al massimo di preferenze, la registra. */
+  function completaInCorso(azione, chiaveTasto) {
+    const { lista, preferenze } = stato.inCorso;
+    if (azione.lista !== lista) {
+      errore(`Il secondo nome deve essere della Lista ${lista}, come il primo. Per cambiare premi «Annulla».`);
+      return;
+    }
+    if (preferenze.includes(azione.nome)) {
+      errore(`${azione.nome} è già sulla scheda. Se ha un solo nome premi «Solo 1 preferenza».`);
+      return;
+    }
+    stato.inCorso = { lista, preferenze: [...preferenze, azione.nome] };
+    if (stato.inCorso.preferenze.length >= elezione().maxPreferenze) registraInCorso(chiaveTasto);
+    else {
+      persisti();
+      disegna();
+      lampeggia(chiaveTasto);
+    }
+  }
+
+  /** Registra la scheda in corso con i nomi toccati finora («Solo 1 preferenza»). */
+  function registraInCorso(chiaveTasto) {
+    if (!stato.inCorso) return;
+    const { lista, preferenze } = stato.inCorso;
+    stato.inCorso = null;
+    registra({ tipo: 'lista', lista, preferenze }, typeof chiaveTasto === 'string' ? chiaveTasto : null);
   }
 
   /** Aggiunge un'altra preferenza all'ultima scheda registrata. */
@@ -403,15 +507,20 @@ export function creaConteggio({
   function conferme(chiaveTasto, testo) {
     persisti();
     disegna();
+    lampeggia(chiaveTasto, barra);
+    annuncia(testo);
+    controlla();
+  }
+
+  /** Vibra e fa lampeggiare il tasto toccato (e la barra, se indicata). */
+  function lampeggia(chiaveTasto, ...altri) {
     navigator.vibrate?.(25);
-    for (const elemento of [el.tasti.get(chiaveTasto)?.bottone, barra]) {
+    for (const elemento of [el.tasti.get(chiaveTasto)?.bottone, ...altri]) {
       if (!elemento) continue;
       elemento.classList.remove('lampeggia');
       void elemento.offsetWidth;
       elemento.classList.add('lampeggia');
     }
-    annuncia(testo);
-    controlla();
   }
 
   function errore(testo) {
@@ -429,6 +538,14 @@ export function creaConteggio({
   }
 
   function annullaUltima() {
+    if (stato.inCorso) {
+      // La scheda in corso non è ancora registrata: si toglie senza chiedere.
+      stato.inCorso = null;
+      persisti();
+      disegna();
+      annuncia('Scheda in corso annullata.');
+      return;
+    }
     const indice = ultimaDellElezione();
     if (indice < 0) return;
     const { scheda } = stato.storico[indice];
@@ -452,12 +569,23 @@ export function creaConteggio({
   }
 
   function cambiaElezione(id) {
+    if (stato.inCorso && id !== stato.elezione) {
+      errore('Prima completa la scheda in corso: tocca il secondo nome oppure «Solo 1 preferenza».');
+      return;
+    }
     stato.elezione = id;
     stato.aggiungi = false;
     persisti();
     costruisciGriglia();
     disegna();
     controlla();
+  }
+
+  function cambiaAspetta() {
+    stato.aspetta = el.aspetta.checked;
+    if (!stato.aspetta) registraInCorso();
+    persisti();
+    disegna();
   }
 
   function cambiaAutomatica() {

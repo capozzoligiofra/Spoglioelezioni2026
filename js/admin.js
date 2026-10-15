@@ -379,14 +379,18 @@ function messaggioCommit(bozze) {
     const stato = STATO_BREVE[modifiche.stato ?? statoSezione(app.pubblicati.sezioni[id])];
     const schede = Object.entries(modifiche.elezioni ?? {})
       .filter(([eid]) => elezioneDaId(eid))
-      .map(([eid, dati]) => `${elezioneDaId(eid).nome} ${schedeContate(elezioneDaId(eid), dati)} schede`);
-    return `${seggioUnico() ? nome : `sezione ${nome}`} ${stato}${schede.length ? ` (${schede.join(', ')})` : ''}`;
+      .map(
+        ([eid, dati]) =>
+          `${elezioneDaId(eid).nome} ${formato.conteggio(schedeContate(elezioneDaId(eid), dati), 'scheda', 'schede')}`,
+      );
+    // Con un seggio solo il nome non serve: il titolo del commit resta corto.
+    return `${seggioUnico() ? stato.toLowerCase() : `sezione ${nome} ${stato}`}${schede.length ? ` (${schede.join(', ')})` : ''}`;
   });
   if (bozze.definitivi !== undefined)
     parti.push(bozze.definitivi ? 'risultati definitivi' : 'risultati di nuovo provvisori');
   if (bozze.avviso !== undefined) parti.push(bozze.avviso ? 'comunicazione aggiornata' : 'comunicazione tolta');
   const titolo = `Spoglio: ${parti.join(', ')}`;
-  return titolo.length <= 72
+  return titolo.length <= 100
     ? titolo
     : `Spoglio: ${formato.conteggio(parti.length, 'modifica', 'modifiche')}\n\n${parti.join('\n')}`;
 }

@@ -133,21 +133,24 @@ i dati sono online e quanto ci hanno messo). Poi, in fondo all'area scrutatori, 
 
 L'area scrutatori ha due modi per inserire i voti, si sceglie in cima al seggio.
 
-**Scheda per scheda** (consigliato, fatto per il telefono). Si conta mentre le schede vengono lette ad alta voce, e
-**ogni tocco registra subito una scheda**:
+**Scheda per scheda** (consigliato, fatto per il telefono). Si conta mentre le schede vengono lette ad alta voce:
 
 1. In alto scegli l'elezione che state contando (Consiglio d'Istituto o Consulta) e scrivi il numero dei **votanti**
    preso dal registro.
-2. Per ogni scheda tocca il **candidato** con la preferenza (vale anche come voto alla sua lista), oppure la
-   **lista** se la scheda non ha preferenze, oppure **Bianca** o **Nulla**. Il telefono vibra e in basso compare la
-   scheda appena registrata.
-3. Se la scheda ha una **seconda preferenza**, premi **+ preferenza** in basso e poi il secondo nome (deve essere
-   della stessa lista): si aggiunge alla stessa scheda, senza contarne una nuova.
-4. Se sbagli, **Annulla** in basso toglie l'ultima scheda registrata. Un doppio tocco involontario sullo stesso nome
-   viene contato una volta sola.
-5. I numeri vanno sul sito pubblico **ogni 10 schede** (si può cambiare in **Pubblica in automatico**: 10, 20, 50 o
+2. **Consiglio d'Istituto (2 preferenze)**: tocca i **due nomi** votati. Al primo nome la scheda resta «in corso»
+   (il nome resta evidenziato), al secondo viene registrata. Se la scheda ha **un solo nome**, dopo averlo toccato
+   premi **Solo 1 preferenza** in basso. Il secondo nome deve essere della stessa lista.
+3. **Consulta (una preferenza)**: ogni tocco sul candidato registra subito la scheda.
+4. La **lista** (scheda senza nomi), **Bianca** e **Nulla** registrano subito la scheda. Il telefono vibra e in
+   basso compare la scheda appena registrata.
+5. Se sbagli, **Annulla** in basso toglie la scheda in corso oppure l'ultima scheda registrata. Un doppio tocco
+   involontario sullo stesso nome viene contato una volta sola.
+6. I numeri vanno sul sito pubblico **ogni 10 schede** (si può cambiare in **Pubblica in automatico**: 10, 20, 50 o
    solo a mano), e comunque dopo 2 minuti senza schede nuove, così anche le ultime arrivano. Puoi sempre premere
    **Pubblica** a mano.
+
+Chi preferisce registrare la scheda già al primo nome può togliere la spunta **Con 2 preferenze aspetta il secondo
+nome**, in fondo: in quel caso il secondo nome si aggiunge con **+ preferenza**.
 
 Le schede contate restano salvate sul telefono anche se la pagina si chiude o manca la connessione: vengono
 pubblicate appena possibile.
