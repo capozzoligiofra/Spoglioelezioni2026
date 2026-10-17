@@ -1,11 +1,11 @@
 {
-  "aggiornato": "2026-10-17T12:21:11.488Z",
+  "aggiornato": "2026-10-17T12:22:27.907Z",
   "definitivi": false,
   "avviso": "",
   "sezioni": {
     "seggio": {
       "stato": "in-corso",
-      "aggiornato": "2026-10-17T12:21:11.488Z",
+      "aggiornato": "2026-10-17T12:22:27.907Z",
       "elezioni": {
         "consiglio-istituto": {
           "votanti": 574,
@@ -17,12 +17,12 @@
               "preferenze": { "Mazzariello Vincenzo": 0, "Iannacco Cristina": 0 }
             },
             "II": {
-              "voti": 131,
-              "preferenze": { "Scariati Giovanni": 129, "Paolantonio Gelsomina": 8, "Marino Domenico": 12, "Prearo Saida": 95 }
+              "voti": 140,
+              "preferenze": { "Scariati Giovanni": 138, "Paolantonio Gelsomina": 8, "Marino Domenico": 12, "Prearo Saida": 104 }
             },
             "III": {
-              "voti": 106,
-              "preferenze": { "Ferrigno Andrea": 96, "Guarracino Anastasia": 93, "Serrapede Christian": 6, "Aruta Giulia": 1, "Troncone Gianluigi": 2 }
+              "voti": 107,
+              "preferenze": { "Ferrigno Andrea": 97, "Guarracino Anastasia": 94, "Serrapede Christian": 6, "Aruta Giulia": 1, "Troncone Gianluigi": 2 }
             }
           }
         },
