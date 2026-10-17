@@ -1,11 +1,11 @@
 {
-  "aggiornato": "2026-10-17T13:21:42.489Z",
+  "aggiornato": "2026-10-17T13:29:15.507Z",
   "definitivi": false,
   "avviso": "",
   "sezioni": {
     "seggio": {
       "stato": "in-corso",
-      "aggiornato": "2026-10-17T13:21:42.489Z",
+      "aggiornato": "2026-10-17T13:29:15.507Z",
       "elezioni": {
         "consiglio-istituto": {
           "votanti": 574,
@@ -27,13 +27,13 @@
           }
         },
         "consulta": {
-          "votanti": 574,
+          "votanti": 0,
           "bianche": 0,
-          "nulle": 0,
+          "nulle": 4,
           "liste": {
             "I": {
-              "voti": 0,
-              "preferenze": { "Capozzoli Giovanni": 0, "De Feo Florigi": 0, "De Simone Giorgia": 0, "Di Filippo Martina": 0 }
+              "voti": 572,
+              "preferenze": { "Capozzoli Giovanni": 119, "De Feo Florigi": 320, "De Simone Giorgia": 118, "Di Filippo Martina": 15 }
             }
           }
         }
